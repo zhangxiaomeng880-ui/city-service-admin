@@ -1,29 +1,33 @@
 {
   "id": "ai-native-product",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "AI Native Product",
   "mode": "stage-confirmation",
+  "preflight": {
+    "skill": "capability-check",
+    "requiredBeforeProjectStart": true,
+    "blockingPolicy": "block-only-dependent-stage",
+    "statuses": ["ready", "optional", "required-missing", "error"]
+  },
+  "projectConfig": {
+    "figmaHighFidelity": {"type":"boolean","default":false},
+    "abEnabled": {"type":"boolean","default":true}
+  },
   "stages": [
-    {"id":"product","skill":"product-analysis","confirmation":"required"},
-    {"id":"data-kpi","skill":"data-kpi","confirmation":"required"},
-    {"id":"ab-strategy","skill":"ab-experiment","confirmation":"required"},
-    {"id":"ux","skill":"ux-design","confirmation":"required"},
-    {"id":"ui","skill":"ui-design","confirmation":"required"},
-    {"id":"figma","skill":"figma-design","enabledBy":"project.figmaHighFidelity","confirmation":"required"},
-    {"id":"coding","skill":"vibe-coding","confirmation":"required"},
-    {"id":"qa","skill":"qa","confirmation":"on-failure"},
-    {"id":"visual-qa","skill":"visual-qa","confirmation":"on-failure"},
-    {"id":"release","skill":"release-check","confirmation":"required"},
-    {"id":"data-analysis","skill":"data-analysis","confirmation":"required"},
-    {"id":"ab-analysis","skill":"ab-experiment","enabledBy":"project.abEnabled","confirmation":"required"},
-    {"id":"optimization","skill":"product-optimization","confirmation":"required"},
-    {"id":"review","skill":"project-review","confirmation":"required"}
+    {"id":"product","skill":"product-analysis","confirmation":"required","dependencies":[]},
+    {"id":"data-kpi","skill":"data-kpi","confirmation":"required","dependencies":["analytics"]},
+    {"id":"ab-strategy","skill":"ab-experiment","confirmation":"required","dependencies":["experiment"]},
+    {"id":"ux","skill":"ux-design","confirmation":"required","dependencies":[]},
+    {"id":"ui","skill":"ui-design","confirmation":"required","dependencies":[]},
+    {"id":"figma","skill":"figma-design","enabledBy":"project.figmaHighFidelity","confirmation":"required","dependencies":["figma"]},
+    {"id":"coding","skill":"vibe-coding","confirmation":"required","dependencies":["coding","github"]},
+    {"id":"qa","skill":"qa","confirmation":"on-failure","dependencies":["browser"],"onFailure":"return-to-coding"},
+    {"id":"visual-qa","skill":"visual-qa","confirmation":"on-failure","dependencies":["browser"],"onFailure":"return-to-coding"},
+    {"id":"release","skill":"release-check","confirmation":"required","dependencies":["github"]},
+    {"id":"data-analysis","skill":"data-analysis","confirmation":"required","dependencies":["analytics"]},
+    {"id":"ab-analysis","skill":"ab-experiment","enabledBy":"project.abEnabled","confirmation":"required","dependencies":["experiment","analytics"]},
+    {"id":"optimization","skill":"product-optimization","confirmation":"required","dependencies":["analytics"]},
+    {"id":"review","skill":"project-review","confirmation":"required","dependencies":[]}
   ],
-  "gates": [
-    "product",
-    "design",
-    "coding",
-    "release",
-    "optimization"
-  ]
+  "gates": ["product","design","coding","release","optimization"]
 }
