@@ -1,0 +1,35 @@
+/* Temporary visual baseline for the current Figma Make sketch. */
+:root {
+  color-scheme: light;
+  background: #c5cdd8;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100dvh;
+  background: #c5cdd8;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 430px) {
+  body {
+    overflow: hidden;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@media (min-width: 431px) {
+  #root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+  }
+}
