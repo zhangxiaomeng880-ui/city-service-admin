@@ -1,0 +1,29 @@
+{
+  "id": "ai-native-product",
+  "version": "0.1.0",
+  "name": "AI Native Product",
+  "mode": "stage-confirmation",
+  "stages": [
+    {"id":"product","skill":"product-analysis","confirmation":"required"},
+    {"id":"data-kpi","skill":"data-kpi","confirmation":"required"},
+    {"id":"ab-strategy","skill":"ab-experiment","confirmation":"required"},
+    {"id":"ux","skill":"ux-design","confirmation":"required"},
+    {"id":"ui","skill":"ui-design","confirmation":"required"},
+    {"id":"figma","skill":"figma-design","enabledBy":"project.figmaHighFidelity","confirmation":"required"},
+    {"id":"coding","skill":"vibe-coding","confirmation":"required"},
+    {"id":"qa","skill":"qa","confirmation":"on-failure"},
+    {"id":"visual-qa","skill":"visual-qa","confirmation":"on-failure"},
+    {"id":"release","skill":"release-check","confirmation":"required"},
+    {"id":"data-analysis","skill":"data-analysis","confirmation":"required"},
+    {"id":"ab-analysis","skill":"ab-experiment","enabledBy":"project.abEnabled","confirmation":"required"},
+    {"id":"optimization","skill":"product-optimization","confirmation":"required"},
+    {"id":"review","skill":"project-review","confirmation":"required"}
+  ],
+  "gates": [
+    "product",
+    "design",
+    "coding",
+    "release",
+    "optimization"
+  ]
+}
