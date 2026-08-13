@@ -3,7 +3,7 @@ name: Preview
 on:
   push:
     branches:
-      - agent/implement-figma-city-service
+      - main
 
 permissions:
   contents: read
