@@ -21,11 +21,76 @@
 11. Validation：产出是否经过验证及验证结果
 12. Downstream：输出给下一阶段的内容
 
-## 2. 第一版阶段链路
+## 2. Stage Schema 与 Checklist 的关系
+
+Stage Schema 是标准定义层；实际项目执行时，应基于 Schema 生成结构化 Checklist。
+
+```text
+Stage Schema
+  ↓
+Input / Output Catalog
+  ↓
+Checklist Items
+  ↓
+Validation Rules
+  ↓
+Check Result
+  ↓
+Gate
+  ↓
+Next Stage / Blocked
+```
+
+### 2.1 Checklist Item 标准字段
+
+每个检查项至少包含：
+
+- `item_id`：检查项唯一 ID
+- `stage`：所属阶段
+- `type`：Input / Output / Evidence / Gate
+- `catalog`：检查目录
+- `name`：检查项名称
+- `required`：是否必需
+- `input_type`：文档 / 数据 / 链接 / 决策 / 代码 / 资产等
+- `source`：检查来源
+- `validation_rule`：检查规则
+- `status`：Pass / Warning / Missing / Fail / Not Applicable
+- `evidence`：检查证据
+- `owner`：负责补齐或处理的人
+- `last_checked_at`：最近检查时间
+- `blocker`：是否阻断下一阶段
+- `output_location`：产出地址（适用于 Output）
+
+### 2.2 检查状态定义
+
+- **Pass**：满足要求，可以继续
+- **Warning**：存在风险、缺口或待确认项，但不阻断下一阶段；必须记录原因、责任人和后续处理方式
+- **Missing**：必需项尚未提供；默认阻断
+- **Fail**：已有内容但不满足规则；默认阻断
+- **Not Applicable**：经规则判断本项目不适用，并记录判断依据
+
+> Warning 不是“检查失败”的弱化版，而是独立状态：它表示当前可以继续，但存在需要被跟踪和关闭的风险。
+
+## 3. Gate 判断原则
+
+Gate 不仅判断“是否全部完成”，还要综合 Checklist 状态：
+
+- Required 项全部 Pass → **Pass**
+- 存在 Required = Missing / Fail → **Blocked**
+- 存在 Warning → 默认 **Pass with Warning**，除非该 Warning 被配置为 blocker
+- Not Applicable 必须有明确判断依据
+
+Gate 的最终状态至少支持：
+
+- `Pass`
+- `Pass with Warning`
+- `Blocked`
+
+## 4. 第一版阶段链路
 
 **Project → Product → Design → Engineering → QA → Release → Data / Analytics → Knowledge**
 
-### 2.1 Project
+### 4.1 Project
 
 **Input**
 - 项目背景
@@ -52,7 +117,7 @@
 
 **Downstream**：Product
 
-### 2.2 Product
+### 4.2 Product
 
 **Input**
 - Project Output
@@ -77,7 +142,7 @@
 
 **Downstream**：Design
 
-### 2.3 Design
+### 4.3 Design
 
 **Input**
 - PRD
@@ -100,7 +165,7 @@
 
 **Downstream**：Engineering
 
-### 2.4 Engineering
+### 4.4 Engineering
 
 **Input**
 - PRD
@@ -124,7 +189,7 @@
 
 **Downstream**：QA
 
-### 2.5 QA
+### 4.5 QA
 
 **Input**
 - PRD
@@ -147,7 +212,7 @@
 
 **Downstream**：Release
 
-### 2.6 Release
+### 4.6 Release
 
 **Input**
 - QA Passed
@@ -169,7 +234,7 @@
 
 **Downstream**：Data / Analytics
 
-### 2.7 Data / Analytics
+### 4.7 Data / Analytics
 
 **Input**
 - Release Version
@@ -192,7 +257,7 @@
 
 **Downstream**：Knowledge / Product
 
-### 2.8 Knowledge
+### 4.8 Knowledge
 
 **Input**
 - Product / Design / Engineering / QA / Release 产出
@@ -216,7 +281,7 @@
 
 **Downstream**：下一项目 / 下一轮 Product
 
-## 3. 阶段之间的 Input / Output 关系
+## 5. 阶段之间的 Input / Output 关系
 
 ```text
 Project Output
@@ -238,11 +303,19 @@ Knowledge Input → Knowledge Output
 Next Iteration / Reuse
 ```
 
-## 4. 当前优化范围
+## 6. 当前优化原则
 
-本轮只优化现有阶段的 Input / Output，不新增新的业务阶段。下一步逐阶段细化字段、必填项、Gate 条件和 AI 自动化规则。
+本轮只优化现有阶段的 Input / Output，不新增新的业务阶段。
 
-## 5. 后续待细化
+Input / Output 定义不是说明文档，而是**结构化检查体系的基础 Schema**：
+
+- Schema 定义“应该有什么”
+- Checklist 定义“当前有没有”
+- Validation Rule 定义“什么算合格”
+- Check Result 定义“当前状态”
+- Gate 根据检查结果决定“是否允许进入下一阶段”
+
+## 7. 后续待细化
 
 - 每个阶段 Input 的必需/可选字段
 - Output Schema 与验收标准
