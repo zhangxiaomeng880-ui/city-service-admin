@@ -1,0 +1,48 @@
+{
+  "version": "0.1.0",
+  "capabilities": {
+    "figma": {
+      "label": "Figma",
+      "provider": "mcp/app",
+      "requiredFor": ["figma"],
+      "status": "optional"
+    },
+    "github": {
+      "label": "GitHub",
+      "provider": "app",
+      "requiredFor": ["coding", "release"],
+      "status": "optional"
+    },
+    "coding": {
+      "label": "Coding Runtime",
+      "provider": "runtime",
+      "requiredFor": ["coding"],
+      "status": "optional"
+    },
+    "browser": {
+      "label": "Browser / Playwright",
+      "provider": "mcp/app",
+      "requiredFor": ["qa", "visual-qa"],
+      "status": "optional"
+    },
+    "analytics": {
+      "label": "Data Analytics / Data Source",
+      "provider": "app/connector",
+      "requiredFor": ["data-kpi", "data-analysis", "ab-analysis", "optimization"],
+      "status": "optional"
+    },
+    "experiment": {
+      "label": "AB Experiment Platform",
+      "provider": "app/connector",
+      "requiredFor": ["ab-strategy", "ab-analysis"],
+      "status": "optional"
+    }
+  },
+  "statusPolicy": {
+    "ready": "Connected and usable",
+    "optional": "Not connected but not currently required",
+    "required-missing": "Required by the current project and not connected",
+    "error": "Connected but unavailable or unauthorized"
+  },
+  "blockingPolicy": "Only block the stage that depends on a missing capability; do not block unrelated stages."
+}
