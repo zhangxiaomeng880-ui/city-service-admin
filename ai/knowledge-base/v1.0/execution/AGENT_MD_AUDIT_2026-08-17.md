@@ -3,7 +3,6 @@
 ## 1. 审计目的
 
 本次核对针对当前项目全部 Stage Agent MD，检查：
-
 - Input 是否完整
 - Input Readiness / Verification 是否明确
 - Execution 是否完整且职责边界清晰
@@ -13,152 +12,112 @@
 - Environment / Version Dependency 是否明确
 - Status / Resume Rule 是否明确
 - 上下游 Input → Output 是否可追溯
-- 是否存在阶段职责重叠、遗漏或编号/生命周期歧义
+- 是否存在阶段职责重叠、遗漏或生命周期歧义
+- **阶段如何启动、Input 如何提示、Execution 如何进入、Output 如何验证**
 
-本次**不检查 Coding 具体代码实现质量**，只检查 Coding Agent 的流程契约与文档完整性。
+本次不检查 Coding 具体代码实现质量，只检查 Coding Agent 的流程契约与文档完整性。
 
 ## 2. 审计基准
 
-以以下资产作为核对基准：
-
-- `00_AGENT_REGISTRY.md`
-- `00_PROJECT_MANIFEST.md`
-- `04_HANDOFF_AND_AUTOMATION.md` V1.2
-- `07_VERSION_MANIFEST.md`
+- Agent Registry
+- Project Manifest
+- Handoff / Automation Contract
+- Version / Environment Manifest
 - 各 Stage Agent MD
-- 当前 `AI_NATIVE_PROJECT_OS_V1.0.md`
-
-全局 Agent Contract 已明确要求每个 Agent 必须声明：Purpose、Version、Input、Input Readiness、Verification、Execution、Output、Output Verification、Gate、Handoff、Environment Dependency、Version Dependency、Status、Resume Rule。
+- AI Native Project OS
+- `AGENT_STAGE_LIFECYCLE_RULES_V1.1.md`
+- `AGENT_STAGE_INTERACTION_PROTOCOL_V1.0.md`
 
 ## 3. 全量核对结果
 
 | Agent | 当前完整度 | 主要结论 |
 |---|---|---|
-| Project Initialization | PARTIAL | 核心职责完整；但当前项目 Environment Gate 仍为 PARTIAL，不能把项目初始化视为 COMPLETED |
-| Product | PARTIAL | Input / Execution / Output / Gate / Handoff 基本完整；缺少统一合同要求的显式 Input Readiness、Output Verification、Environment Dependency、Version Dependency、Status、Resume Rule |
-| Feasibility | PARTIAL | 条件阶段定义完整，SKIPPED 规则明确；缺少统一合同字段的显式声明 |
-| Design | PARTIAL | 设计职责、组件规范、Token、状态、响应式、Figma、Acceptance Matrix 已覆盖；缺少统一合同字段的显式声明 |
-| Engineering / Coding | PARTIAL | 实现链路完整；已明确 Product + Design 不得被下游重新定义；但当前 Required Input 中未显式列出 Design 输出中的组件规范、Design System / Token、页面→组件映射作为独立输入；另外 Preview 属于 Engineering 后续必经产物，但当前独立 Build/Deploy/Preview Agent 缺失 |
-| Build / Deploy / Preview | GAP | 生命周期中存在独立 Stage，但 Agent Registry 未提供独立 Agent MD；当前只能由 Engineering Agent 的执行步骤覆盖，职责与阶段契约不完全一致 |
-| Acceptance | PARTIAL | 独立 Agent 已存在，Input / Execution / Output / Gate / Handoff 清晰；缺少统一合同字段的显式声明 |
-| QA | PARTIAL | 测试、问题、Retest、Gate、Handoff 完整；缺少统一合同字段的显式声明 |
-| Release | PARTIAL | 发布前检查、Human Gate、发布、Post-Release、Knowledge/Evolution Update 已覆盖；缺少统一合同字段的显式声明 |
-| Data / Experiment | GAP/CONDITIONAL | 当前项目按规则 SKIPPED，但 Agent Registry 仅登记为 Data / Experiment 条件节点，当前 Agent MD 未在本轮检索到；属于条件能力，不阻塞当前项目，但标准流程仍需保留定义或明确其独立 Agent 来源 |
-| Review | PARTIAL | 复盘、返工、阻塞、决策影响、流程改进、Backlog、Agent/Workflow Change 已覆盖；缺少统一合同字段的显式声明 |
-| Knowledge Update | PARTIAL | 已覆盖知识沉淀、复用模式、变更规则、Agent 改进提案及版本变更；缺少统一合同字段的显式声明 |
+| Project Initialization | PARTIAL | 核心职责完整；当前 Environment Gate 仍需按项目状态判定 |
+| Product | PARTIAL | 核心 Input / Execution / Output / Gate / Handoff 完整；统一 Contract 结构仍需持续统一 |
+| Feasibility | PARTIAL | 条件阶段定义完整，SKIPPED 规则明确；统一 Contract 仍需持续统一 |
+| Design | PARTIAL | 页面、交互、视觉、组件规范、Token、状态、Figma 等已覆盖；需统一交互协议 |
+| Engineering / Coding | PARTIAL | 实现链路完整；需显式消费 Design 组件资产并统一交互协议 |
+| Build / Deploy / Preview | COMPLETED | 已补独立 Agent MD，并纳入统一 Stage Contract |
+| Acceptance | PARTIAL | 独立 Agent 已存在；需统一交互协议和 Contract 字段 |
+| QA | PARTIAL | 测试、Issue、Retest、Gate、Handoff 完整；需统一交互协议 |
+| Release | PARTIAL | 发布、Human Gate、Post-Release 已覆盖；需统一交互协议 |
+| Data / Experiment | CONDITIONAL | 已补独立 Agent；本项目不适用时必须 SKIPPED，不删除 Agent |
+| Review | PARTIAL | 已补独立 Contract，并纳入复盘与流程改进闭环 |
+| Knowledge Update | PARTIAL | 已补独立 Contract，并纳入知识沉淀闭环 |
 
-## 4. 已确认且本轮必须固化的职责边界
+## 4. 本轮确认的职责边界
 
 ### Design 负责组件规范
+组件定义、Variants、Token / Design System、页面→组件映射、交互及状态规范、Figma 均属于 Design 输出。
 
-组件规范属于 Design 输出，不属于 Coding 的规范创建职责。Design 应产出：
+### Coding 负责实现
+Coding 消费 Product + Design + 组件规范，不重新定义 Product / Design。
 
-- 组件定义
-- 组件状态 / Variants
-- Token / Design System
-- 页面 → 组件映射
-- 交互及状态规范
-- Figma 定位
+### Project Initialization 负责环境
+Repository、Branch、权限、Runtime、Build / Deploy / Preview 环境、项目版本由 Project Initialization 建立基线；后续阶段只验证依赖。
 
-Coding 只消费并实现这些规范，不重新定义组件。
+### Conditional Agent 永久存在
+Feasibility / Data / Experiment 等条件能力仍必须有 Agent MD。本项目不适用时使用 `SKIPPED` 并记录判断依据、影响和 Re-entry 条件。
 
-### Coding 负责实现，不重新定义上游
+## 5. 阶段交互协议已补齐
 
-Coding 必须消费 Product、Design 及 Design 输出的组件规范；发现 Product / Design 缺失或冲突时记录 Gap，不自行改变上游定义。
+新增统一协议：
 
-### 项目环境属于 Project Initialization
+`workflows/AGENT_STAGE_INTERACTION_PROTOCOL_V1.0.md`
 
-Repository、Branch、权限、运行时、Build、Deploy、Preview 路径、项目版本等基础环境在 Project Initialization 阶段确认。后续阶段只核验自身依赖是否仍与 Manifest 一致；环境变化时触发 Change Impact / Environment Re-verification，不重复初始化。
+标准操作：
 
-## 5. 本轮发现的结构性问题
+- `启动 [Stage]`：自动读取 Contract、Project Context、上游 Output / Handoff、Knowledge，并执行 Input Readiness / Verification / Gate；通过后自动进入 Execution。
+- `继续 [Stage]`：读取 Resume Point 并恢复。
+- `检查 [Stage]`：只审计，不执行。
+- `复盘 [Stage]`：只复盘，不重新执行。
+- `全量执行项目`：按生命周期、Gate 和条件节点自动推进。
+- `检查全部 Agent MD`：全量 Contract 审计。
+- `更新 Knowledge`：执行知识沉淀。
 
-### P0 — 阶段生命周期与本轮口头阶段列表存在差异
+### Input 提示
 
-当前源知识库 / Project Manifest 的标准生命周期仍包含：
+Agent 应输出 Required Input、已满足项、Warning、Missing / Fail、Input Gate。用户无需重复提供系统已有输入。
 
-Project Initialization → Feasibility（条件）→ Product → Design → Engineering/Coding → Build/Deploy/Preview → Acceptance → QA → Release → Data/Experiment（条件）→ Review → Knowledge Update。
+### Execution 提示
 
-本轮讨论中为便于确认曾将后半段简化为 Coding → Review/QA → Release，容易导致 Preview、Acceptance、Knowledge Update 被误认为可以合并或删除。
+Input Gate = PASS 后自动执行；PASS WITH WARNING 且非 blocker 时自动执行。Execution 开始前展示执行计划，并记录 Decision / Gap / Evidence / Deviation / Asset。
 
-**处理原则：本轮不擅自删除源知识库中的标准节点。标准生命周期继续以当前源知识库和 Handoff Contract 为准；如需合并/改名，应单独形成 Decision 并人工确认。**
+### Output 提示
 
-### P1 — Agent MD 统一结构没有完全落实
+Execution 完成后必须 Output Verification → Gate → Handoff，不能只宣布完成。
 
-Agent Registry 已定义统一合同，但各 Agent MD 实际字段仍不完全一致。后续应统一为：
+### 用户介入
 
-Purpose / Mission → Version → Input → Input Readiness → Input Verification → Execution → Output → Output Verification → Gate → Handoff → Environment Dependency → Version Dependency → Status → Resume Rule。
+只有 Required Input 缺失、无法自动解决的冲突、Human Gate、高风险不可逆操作或明确人工决策才暂停。
 
-### P1 — Build / Deploy / Preview 缺少独立 Agent MD
+## 6. DoD
 
-该阶段在生命周期中是独立 Stage，但当前主要由 Engineering Agent 内部步骤覆盖。若希望流程真正可执行、可审计、可复用，应补充独立 Stage Agent，避免阶段存在但没有独立执行契约。
+Stage 只有在以下条件全部满足后才能 COMPLETED：
 
-### P1 — Coding 输入需要显式引用 Design 组件资产
+Input Ready + Input Verification + Execution Complete + Output Generated + Output Verification + Gate Passed + Handoff Complete。
 
-Coding Agent 当前已声明不得替换 Design 已确定的视觉、组件、交互，但 Required Input 未将组件规范、Token、页面→组件映射作为独立字段。应补齐文档契约，而不是让 Coding 自行推断。
+## 7. 本轮复盘
 
-## 6. 本轮流程确认后的标准阶段关系
+本轮的关键不是增加 Prompt，而是把“启动一个 Agent”定义为一套可执行协议：
 
-在不修改当前源生命周期的前提下，阶段依赖应理解为：
+**用户发起阶段意图 → Agent 自动读取规则与上下文 → Input 检查 → Gate → Execution → Output Verification → Handoff → 状态更新。**
 
-Project Initialization
-→ Product
-→ Feasibility（条件）
-→ Design
-→ Engineering/Coding
-→ Build/Deploy/Preview
-→ Acceptance
-→ QA
-→ Release
-→ Data/Experiment（条件）
-→ Review
-→ Knowledge Update
+这避免用户重复提供已有信息，也避免 Agent 在没有输入验证的情况下直接执行。
 
-其中：
+同时确认：
 
-- Product 定义业务边界和验收基础
-- Design 定义页面、交互、视觉、组件及设计规范
-- Coding 实现已确认的 Product + Design
-- Preview 提供可验证版本
-- Acceptance 验证产品/设计验收标准
-- QA 验证功能、交互、视觉、适配和问题闭环
-- Release 完成正式发布与发布后验证
-- Review 复盘真实执行和流程质量
-- Knowledge Update 将已验证结论沉淀并反哺下一轮
+1. Agent 是能力资产，Stage 是项目执行实例。
+2. SKIPPED 不等于 Agent 不存在。
+3. Stage MD 保存执行事实，Knowledge Base 保存经过验证的可复用规则。
+4. Human Intervention 应是例外，不应成为每一步的默认确认机制。
+5. 关键状态必须可追溯，不能用“做过了”替代 Gate / Verification。
 
-## 7. DoD 核对结论
+## 8. 当前状态
 
-当前全局 DoD 已定义为：
-
-Input 完整 + Gate 通过 + 必需产出生成 + Output Verification + 地址/版本可追溯 + Handoff 完整 → 才允许 Stage COMPLETED。
-
-因此，“已经执行过”不能直接等同于“Stage COMPLETED”。PARTIAL / BLOCKED / SKIPPED 必须保留其状态、依据、影响和 Resume Point。
-
-## 8. 本轮复盘
-
-本轮最重要的发现不是增加更多 Agent，而是确认 **Agent MD 本身必须成为可执行合同，而不能只是阶段说明文档**。
-
-本轮形成的关键改进：
-
-1. 用统一 Input → Readiness → Verification → Execution → Output → Verification → Gate → Handoff 检查每个 Agent。
-2. 将 Design 的组件规范职责与 Coding 的实现职责明确分离。
-3. 将 Project Initialization 的环境/分支/版本职责与 Coding 实现职责明确分离。
-4. 不因为当前项目暂时跳过某个节点，就从标准生命周期删除该节点。
-5. 用阶段间 Handoff 检查上下游资产血缘，而不是只检查单个 MD 是否“看起来完整”。
-6. Review 与 Knowledge Update 必须成为真正的闭环，而不是项目结束后的附加文档。
-7. 复盘结果必须能够回写 Agent / Workflow / Knowledge，并形成下一轮执行输入。
-
-## 9. 建议的后续修复顺序
-
-1. 统一全部 Agent MD 的标准合同字段。
-2. 补充独立 Build / Deploy / Preview Agent MD。
-3. 在 Coding Agent Required Input 中显式加入 Design 组件规范、Token、页面→组件映射。
-4. 对 Acceptance / QA / Release / Review / Knowledge Update 做上下游血缘检查。
-5. 修正 Agent 文件编号歧义，但保留历史文件，不直接删除。
-6. 修复后重新执行一次 Agent Workflow Audit。
-
-## 10. 本记录状态
-
-- Audit：COMPLETED
-- Code Implementation Review：SKIPPED（按本轮约定）
-- Knowledge Update：本记录作为本轮 Knowledge Update 的 Evidence / Evolution Input
-- 下一步：按上述修复顺序更新 Agent MD，再执行复核
+- Full Agent MD Audit：COMPLETED
+- Stage Interaction Protocol：COMPLETED
+- Conditional Agent Rule：COMPLETED
+- Knowledge / Evolution Update：COMPLETED
+- Coding Implementation Review：SKIPPED（按本轮约定）
+- 下一步：统一现有全部 Agent MD 的 Contract 字段，并重新执行全量 Audit。
