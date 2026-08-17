@@ -3,10 +3,11 @@ name: Build
 on:
   push:
     branches:
-      - agent/implement-figma-city-service
+      - main
+      - feature/department-registration-v1
   pull_request:
     branches:
-      - agent/implement-figma-city-service
+      - main
 
 jobs:
   build:
