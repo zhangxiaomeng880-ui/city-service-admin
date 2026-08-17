@@ -1,0 +1,20 @@
+name: Package AI Native Project OS Plugin
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package plugin
+        run: |
+          mkdir -p dist
+          cd ai/plugin
+          zip -r ../../dist/AI_NATIVE_PROJECT_OS_PLUGIN_V1.0.zip AI_NATIVE_PROJECT_OS_PLUGIN_V1.0
+      - name: Upload plugin ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI_NATIVE_PROJECT_OS_PLUGIN_V1.0
+          path: dist/AI_NATIVE_PROJECT_OS_PLUGIN_V1.0.zip
