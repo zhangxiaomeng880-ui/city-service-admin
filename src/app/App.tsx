@@ -1,226 +1,39 @@
 import { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  CirclePlus,
-  MapPin,
-  Search,
-  Stethoscope,
-  Users,
-  X,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronRight, Search, Stethoscope } from "lucide-react";
 
-type Doctor = {
-  id: string;
-  name: string;
-  title: string;
-  specialty: string;
-  hospital: string;
-  status: "启用" | "停用";
+type Doctor = { id:string; name:string; title:string; specialty:string; hospital:string };
+type Hospital = { id:string; name:string; grade:string; campuses:string[]; departments:string[]; doctors:Record<string,Doctor[]> };
+type City = { hospitals:Hospital[] };
+type Page = "home"|"hospital"|"campus"|"department"|"doctor"|"slots"|"done";
+
+const mock:Record<string,City> = {
+  "深圳市": { hospitals:[
+    {id:"sz-rm",name:"深圳市人民医院",grade:"三级甲等",campuses:["留医部"],departments:["内科","外科","儿科","骨科"],doctors:{"内科":[{id:"SZ001",name:"张医生",title:"主任医师",specialty:"心血管内科",hospital:"深圳市人民医院"},{id:"SZ002",name:"李医生",title:"副主任医师",specialty:"呼吸内科",hospital:"深圳市人民医院"}],"外科":[{id:"SZ003",name:"陈医生",title:"主任医师",specialty:"普外科",hospital:"深圳市人民医院"}],"儿科":[],"骨科":[]}},
+    {id:"sz-child",name:"深圳市儿童医院",grade:"三级甲等",campuses:["总院"],departments:["儿科","内科"],doctors:{"儿科":[{id:"SZ101",name:"赵医生",title:"主任医师",specialty:"儿童呼吸",hospital:"深圳市儿童医院"}],"内科":[]}}
+  ]},
+  "上海市": { hospitals:[{id:"sh-rm",name:"上海市第一人民医院",grade:"三级甲等",campuses:["北部院区","南部院区"],departments:["内科","外科","妇产科"],doctors:{"内科":[{id:"SH001",name:"吴医生",title:"副主任医师",specialty:"呼吸内科",hospital:"上海市第一人民医院"}],"外科":[],"妇产科":[]}}]},
+  "北京市": { hospitals:[{id:"bj-xh",name:"北京协和医院",grade:"三级甲等",campuses:["东单院区"],departments:["内科","外科","骨科"],doctors:{"内科":[{id:"BJ001",name:"孙医生",title:"主任医师",specialty:"内分泌科",hospital:"北京协和医院"}],"外科":[],"骨科":[]}}]}
 };
+const dates=["今天 8/17","明天 8/18","周三 8/19","周四 8/20","周五 8/21"];
+const slots=["08:00","08:30","09:00","09:30","10:00","10:30","14:00","14:30","15:00"];
 
-type Department = {
-  id: string;
-  name: string;
-};
-
-type CityData = {
-  departments: Department[];
-  doctors: Record<string, Doctor[]>;
-};
-
-const mockData: Record<string, CityData> = {
-  深圳市: {
-    departments: [
-      { id: "internal", name: "内科" },
-      { id: "surgery", name: "外科" },
-      { id: "pediatrics", name: "儿科" },
-      { id: "gynecology", name: "妇产科" },
-      { id: "orthopedics", name: "骨科" },
-      { id: "dermatology", name: "皮肤科" },
-    ],
-    doctors: {
-      internal: [
-        { id: "SZ-D001", name: "张医生", title: "主任医师", specialty: "心血管内科", hospital: "深圳市人民医院", status: "启用" },
-        { id: "SZ-D002", name: "李医生", title: "副主任医师", specialty: "呼吸内科", hospital: "深圳市人民医院", status: "启用" },
-        { id: "SZ-D003", name: "王医生", title: "主治医师", specialty: "消化内科", hospital: "深圳市人民医院", status: "启用" },
-      ],
-      surgery: [
-        { id: "SZ-D011", name: "陈医生", title: "主任医师", specialty: "普外科", hospital: "深圳市人民医院", status: "启用" },
-        { id: "SZ-D012", name: "刘医生", title: "副主任医师", specialty: "肝胆外科", hospital: "深圳市人民医院", status: "启用" },
-      ],
-      pediatrics: [{ id: "SZ-D021", name: "赵医生", title: "主任医师", specialty: "儿童呼吸", hospital: "深圳市儿童医院", status: "启用" }],
-      gynecology: [],
-      orthopedics: [],
-      dermatology: [],
-    },
-  },
-  广州市: {
-    departments: [
-      { id: "internal", name: "内科" },
-      { id: "surgery", name: "外科" },
-      { id: "pediatrics", name: "儿科" },
-      { id: "oncology", name: "肿瘤科" },
-    ],
-    doctors: {
-      internal: [{ id: "GZ-D001", name: "周医生", title: "主任医师", specialty: "心血管内科", hospital: "广州市第一人民医院", status: "启用" }],
-      surgery: [{ id: "GZ-D011", name: "黄医生", title: "副主任医师", specialty: "普外科", hospital: "广州市第一人民医院", status: "启用" }],
-      pediatrics: [],
-      oncology: [],
-    },
-  },
-  北京市: {
-    departments: [{ id: "internal", name: "内科" }, { id: "surgery", name: "外科" }, { id: "orthopedics", name: "骨科" }],
-    doctors: {
-      internal: [{ id: "BJ-D001", name: "孙医生", title: "主任医师", specialty: "内分泌科", hospital: "北京协和医院", status: "启用" }],
-      surgery: [],
-      orthopedics: [],
-    },
-  },
-  上海市: {
-    departments: [{ id: "internal", name: "内科" }, { id: "surgery", name: "外科" }, { id: "gynecology", name: "妇产科" }],
-    doctors: {
-      internal: [{ id: "SH-D001", name: "吴医生", title: "副主任医师", specialty: "呼吸内科", hospital: "上海市第一人民医院", status: "启用" }],
-      surgery: [],
-      gynecology: [],
-    },
-  },
-  杭州市: {
-    departments: [{ id: "internal", name: "内科" }, { id: "pediatrics", name: "儿科" }],
-    doctors: {
-      internal: [{ id: "HZ-D001", name: "沈医生", title: "主任医师", specialty: "消化内科", hospital: "浙江大学医学院附属第一医院", status: "启用" }],
-      pediatrics: [],
-    },
-  },
-};
-
-const cities = Object.keys(mockData);
-
-export default function App() {
-  const [city, setCity] = useState("深圳市");
-  const [departmentId, setDepartmentId] = useState("internal");
-  const [keyword, setKeyword] = useState("");
-  const [doctorsByCity, setDoctorsByCity] = useState(mockData);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [newDoctorName, setNewDoctorName] = useState("");
-  const [newDoctorTitle, setNewDoctorTitle] = useState("主治医师");
-  const [newDoctorSpecialty, setNewDoctorSpecialty] = useState("");
-
-  const cityData = doctorsByCity[city];
-  const departments = cityData.departments;
-  const selectedDepartment = departments.find((item) => item.id === departmentId) ?? departments[0];
-  const activeDepartmentId = selectedDepartment?.id ?? "";
-
-  const doctors = useMemo(() => {
-    const list = cityData.doctors[activeDepartmentId] ?? [];
-    if (!keyword.trim()) return list;
-    const q = keyword.trim();
-    return list.filter((doctor) => `${doctor.name}${doctor.specialty}${doctor.title}`.includes(q));
-  }, [cityData, activeDepartmentId, keyword]);
-
-  const departmentCount = (id: string) => cityData.doctors[id]?.length ?? 0;
-
-  const switchCity = (nextCity: string) => {
-    setCity(nextCity);
-    const nextDepartments = doctorsByCity[nextCity].departments;
-    setDepartmentId(nextDepartments[0]?.id ?? "");
-    setKeyword("");
-  };
-
-  const addDoctor = () => {
-    if (!newDoctorName.trim() || !newDoctorSpecialty.trim() || !activeDepartmentId) return;
-    const doctor: Doctor = {
-      id: `${city.slice(0, 2)}-D${Date.now().toString().slice(-4)}`,
-      name: newDoctorName.trim(),
-      title: newDoctorTitle,
-      specialty: newDoctorSpecialty.trim(),
-      hospital: `${city}示范医院`,
-      status: "启用",
-    };
-    setDoctorsByCity((current) => ({
-      ...current,
-      [city]: {
-        ...current[city],
-        doctors: {
-          ...current[city].doctors,
-          [activeDepartmentId]: [...(current[city].doctors[activeDepartmentId] ?? []), doctor],
-        },
-      },
-    }));
-    setNewDoctorName("");
-    setNewDoctorSpecialty("");
-    setNewDoctorTitle("主治医师");
-    setModalOpen(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-[#f5f7fa] text-[#1f2329]">
-      <header className="h-16 border-b border-[#e8eaed] bg-white px-7 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[#1677ff] flex items-center justify-center text-white"><Stethoscope size={18} /></div>
-          <div className="text-[17px] font-semibold tracking-tight">城市服务管理后台</div>
-          <div className="h-5 w-px bg-[#e5e6eb] mx-1" />
-          <div className="text-[14px] text-[#86909c]">科室挂号</div>
-        </div>
-        <div className="flex items-center gap-4 text-[13px] text-[#86909c]"><span>管理员</span><div className="h-8 w-8 rounded-full bg-[#e8f3ff] text-[#1677ff] flex items-center justify-center font-medium">管</div></div>
-      </header>
-
-      <div className="flex min-h-[calc(100vh-64px)]">
-        <aside className="w-[208px] border-r border-[#e8eaed] bg-white px-3 py-5">
-          <div className="px-3 mb-3 text-[12px] text-[#86909c]">业务管理</div>
-          <div className="h-10 rounded-lg bg-[#e8f3ff] text-[#1677ff] px-3 flex items-center gap-2 text-[14px] font-medium"><Stethoscope size={16} /> 科室挂号</div>
-        </aside>
-
-        <main className="flex-1 p-7 min-w-0">
-          <div className="flex items-start justify-between mb-6">
-            <div><h1 className="text-[24px] leading-8 font-semibold mb-1">科室挂号</h1><p className="text-[13px] text-[#86909c]">维护城市下的科室及科室对应医生信息</p></div>
-            <button onClick={() => setModalOpen(true)} className="h-9 px-4 rounded-md bg-[#1677ff] text-white text-[14px] flex items-center gap-1.5 shadow-sm"><CirclePlus size={16} /> 新增医生</button>
-          </div>
-
-          <section className="bg-white border border-[#e8eaed] rounded-xl overflow-hidden">
-            <div className="h-16 px-5 border-b border-[#f0f1f3] flex items-center justify-between">
-              <div className="flex items-center gap-2"><MapPin size={16} className="text-[#1677ff]" /><span className="text-[14px] text-[#4e5969]">城市</span>
-                <div className="relative"><select value={city} onChange={(event) => switchCity(event.target.value)} className="appearance-none h-9 min-w-[130px] pl-3 pr-8 border border-[#d9dce1] rounded-md bg-white text-[14px] outline-none focus:border-[#1677ff]">{cities.map((item) => <option key={item}>{item}</option>)}</select><ChevronDown size={14} className="absolute right-2.5 top-3 text-[#86909c] pointer-events-none" /></div>
-              </div>
-              <div className="text-[13px] text-[#86909c]">当前城市：{city}</div>
-            </div>
-
-            <div className="grid grid-cols-[230px_1fr] min-h-[560px]">
-              <div className="border-r border-[#f0f1f3] bg-[#fbfcfe] p-3">
-                <div className="px-2 py-2 text-[12px] text-[#86909c]">科室列表</div>
-                <div className="space-y-1">{departments.map((department) => {
-                  const active = department.id === activeDepartmentId;
-                  return <button key={department.id} onClick={() => { setDepartmentId(department.id); setKeyword(""); }} className={`w-full h-11 px-3 rounded-lg flex items-center justify-between text-left ${active ? "bg-white text-[#1677ff] shadow-[0_1px_4px_rgba(0,0,0,0.06)]" : "text-[#4e5969] hover:bg-white"}`}><span className="text-[14px] font-medium">{department.name}</span><span className={`text-[12px] ${active ? "text-[#1677ff]" : "text-[#86909c]"}`}>{departmentCount(department.id)} 人</span></button>;
-                })}</div>
-              </div>
-
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-5">
-                  <div><div className="flex items-center gap-1.5 text-[17px] font-semibold">{selectedDepartment?.name}<ChevronRight size={15} className="text-[#c9cdd4]" /><span className="text-[#86909c] font-normal">医生</span></div><div className="text-[12px] text-[#86909c] mt-1">共 {doctors.length} 位医生</div></div>
-                  <div className="relative w-[230px]"><Search size={15} className="absolute left-3 top-3 text-[#86909c]" /><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="搜索医生姓名或专业" className="w-full h-9 pl-9 pr-3 border border-[#d9dce1] rounded-md text-[13px] outline-none focus:border-[#1677ff]" /></div>
-                </div>
-
-                <div className="border border-[#e8eaed] rounded-lg overflow-hidden">
-                  <div className="grid grid-cols-[90px_1.1fr_1.2fr_1.2fr_100px_110px] h-11 items-center bg-[#f7f8fa] px-4 text-[12px] text-[#86909c]"><span>医生ID</span><span>医生</span><span>职称</span><span>专业</span><span>状态</span><span>操作</span></div>
-                  {doctors.length ? doctors.map((doctor) => <div key={doctor.id} className="grid grid-cols-[90px_1.1fr_1.2fr_1.2fr_100px_110px] min-h-[60px] items-center px-4 border-t border-[#f0f1f3] text-[13px]"><span className="text-[#86909c]">{doctor.id}</span><span className="font-medium">{doctor.name}</span><span className="text-[#4e5969]">{doctor.title}</span><span className="text-[#4e5969]">{doctor.specialty}</span><span><span className="inline-flex items-center gap-1.5 text-[#00b42a]"><i className="w-1.5 h-1.5 rounded-full bg-[#00b42a]" />{doctor.status}</span></span><button onClick={() => { setNewDoctorName(doctor.name); setNewDoctorTitle(doctor.title); setNewDoctorSpecialty(doctor.specialty); setModalOpen(true); }} className="text-[#1677ff] hover:text-[#0e5fd8] text-left">编辑</button></div>) : <div className="h-48 flex flex-col items-center justify-center text-[#86909c]"><Users size={26} className="mb-2 text-[#c9cdd4]" /><div className="text-[13px]">暂无医生</div><div className="text-[12px] mt-1">可通过右上角「新增医生」添加</div></div>}
-                </div>
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-
-      {modalOpen && <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-5 z-50" onMouseDown={(event) => { if (event.currentTarget === event.target) setModalOpen(false); }}>
-        <div className="w-full max-w-[460px] rounded-xl bg-white shadow-2xl overflow-hidden">
-          <div className="h-14 px-5 border-b border-[#f0f1f3] flex items-center justify-between"><div className="text-[16px] font-semibold">新增/编辑医生</div><button onClick={() => setModalOpen(false)} className="text-[#86909c] hover:text-[#1f2329]"><X size={18} /></button></div>
-          <div className="p-5 space-y-4">
-            <label className="block"><span className="block text-[13px] text-[#4e5969] mb-1.5">医生姓名</span><input value={newDoctorName} onChange={(event) => setNewDoctorName(event.target.value)} className="w-full h-9 px-3 border border-[#d9dce1] rounded-md text-[13px] outline-none focus:border-[#1677ff]" placeholder="请输入医生姓名" /></label>
-            <label className="block"><span className="block text-[13px] text-[#4e5969] mb-1.5">职称</span><select value={newDoctorTitle} onChange={(event) => setNewDoctorTitle(event.target.value)} className="w-full h-9 px-3 border border-[#d9dce1] rounded-md text-[13px] bg-white outline-none focus:border-[#1677ff]"><option>主任医师</option><option>副主任医师</option><option>主治医师</option></select></label>
-            <label className="block"><span className="block text-[13px] text-[#4e5969] mb-1.5">专业</span><input value={newDoctorSpecialty} onChange={(event) => setNewDoctorSpecialty(event.target.value)} className="w-full h-9 px-3 border border-[#d9dce1] rounded-md text-[13px] outline-none focus:border-[#1677ff]" placeholder="请输入专业方向" /></label>
-          </div>
-          <div className="h-16 px-5 border-t border-[#f0f1f3] flex items-center justify-end gap-2"><button onClick={() => setModalOpen(false)} className="h-9 px-4 rounded-md border border-[#d9dce1] text-[13px]">取消</button><button onClick={addDoctor} disabled={!newDoctorName.trim() || !newDoctorSpecialty.trim()} className="h-9 px-4 rounded-md bg-[#1677ff] text-white text-[13px] disabled:opacity-40">保存</button></div>
-        </div>
-      </div>}
-    </div>
-  );
+export default function App(){
+  const [page,setPage]=useState<Page>("home"),[city]=useState("深圳市"),[hospital,setHospital]=useState<Hospital|null>(null),[campus,setCampus]=useState(""),[department,setDepartment]=useState(""),[doctor,setDoctor]=useState<Doctor|null>(null),[date,setDate]=useState(dates[0]),[slot,setSlot]=useState(""),[query,setQuery]=useState("");
+  const hospitals=mock[city].hospitals;
+  const doctors=useMemo(()=>department&&hospital?hospital.doctors[department]??[]:[],[hospital,department]);
+  const filteredHospitals=hospitals.filter(h=>!query||h.name.includes(query));
+  const chooseHospital=(h:Hospital)=>{setHospital(h);setCampus(h.campuses.length>1?"":h.campuses[0]);setPage(h.campuses.length>1?"campus":"department")};
+  const back=()=>{if(page==="hospital")setPage("home");else if(page==="campus")setPage("hospital");else if(page==="department")setPage(hospital&&hospital.campuses.length>1?"campus":"hospital");else if(page==="doctor")setPage("department");else if(page==="slots")setPage("doctor")};
+  const reset=()=>{setPage("home");setHospital(null);setCampus("");setDepartment("");setDoctor(null);setSlot("");setQuery("")};
+  const title=page==="home"?"科室挂号":page==="hospital"?"选择医院":page==="campus"?"选择院区":page==="department"?"选择科室":page==="doctor"?"选择医生":page==="slots"?"选择日期/号源":"挂号成功";
+  return <div className="min-h-screen bg-[#f7f8fa] text-[#1d1b20] flex justify-center"><div className="w-full max-w-[430px] min-h-screen bg-white shadow-sm">
+    <header className="h-14 px-5 flex items-center gap-3 border-b border-[#eee] bg-white sticky top-0 z-10">{page!=="home"&&page!=="done"?<button onClick={back} className="p-1 -ml-1"><ArrowLeft size={21}/></button>:null}<div className="flex-1"><div className="text-[18px] font-semibold">{title}</div>{page!=="home"&&hospital?<div className="text-[11px] text-[#79747e] mt-0.5">{hospital.name}</div>:null}</div>{page!=="done"?<div className="text-[13px] text-[#6750a4]">{city}</div>:null}</header>
+    {page==="home"&&<main className="p-5"><div className="pt-5 pb-6"><div className="text-[28px] font-semibold leading-9">找到合适的医院和医生</div><div className="text-[14px] text-[#79747e] mt-2">按城市 → 医院 → 科室快速完成挂号</div></div><button onClick={()=>setPage("hospital")} className="w-full h-14 rounded-[28px] bg-[#f2edf7] flex items-center gap-3 px-5 text-left"><Search size={20} className="text-[#6750a4]"/><span className="text-[15px] text-[#49454f]">搜索医院、科室或医生</span></button><div className="mt-8 flex items-center justify-between"><div className="text-[18px] font-semibold">热门医院</div><button onClick={()=>setPage("hospital")} className="text-[13px] text-[#6750a4]">查看全部</button></div><div className="mt-3 space-y-3">{hospitals.map(h=><button key={h.id} onClick={()=>chooseHospital(h)} className="w-full p-4 rounded-3xl bg-white border border-[#e6e1e5] text-left flex items-center gap-4"><div className="w-11 h-11 rounded-2xl bg-[#f2edf7] flex items-center justify-center text-[#6750a4]"><Stethoscope size={21}/></div><div className="flex-1"><div className="font-medium text-[15px]">{h.name}</div><div className="text-[12px] text-[#79747e] mt-1">{h.grade} · {h.departments.length} 个科室</div></div><ChevronRight size={18} className="text-[#79747e]"/></button>)}</div></main>}
+    {page==="hospital"&&<main className="p-5"><div className="relative mb-5"><Search size={18} className="absolute left-4 top-3.5 text-[#79747e]"/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜索医院" className="w-full h-12 rounded-2xl bg-[#f7f2fa] pl-11 pr-4 outline-none text-[14px]"/></div><div>{filteredHospitals.map(h=><button key={h.id} onClick={()=>chooseHospital(h)} className="w-full p-4 border-b border-[#eee] text-left flex items-center"><div className="flex-1"><div className="font-medium">{h.name}</div><div className="text-[12px] text-[#79747e] mt-1">{h.grade} · {h.campuses.length} 个院区</div></div><ChevronRight size={18} className="text-[#79747e]"/></button>)}</div></main>}
+    {page==="campus"&&<main className="p-5"><div className="text-[13px] text-[#79747e] mb-3">请选择就诊院区</div>{hospital?.campuses.map(c=><button key={c} onClick={()=>{setCampus(c);setPage("department")}} className="w-full p-4 mb-2 rounded-2xl border border-[#e6e1e5] text-left flex items-center justify-between"><span className="font-medium">{c}</span><ChevronRight size={18}/></button>)}</main>}
+    {page==="department"&&<main className="p-5"><div className="text-[13px] text-[#79747e] mb-3">{campus?`就诊院区：${campus}`:"请选择科室"}</div><div className="grid grid-cols-2 gap-3">{hospital?.departments.map(d=><button key={d} onClick={()=>{setDepartment(d);setPage("doctor")}} className="min-h-20 p-4 rounded-2xl border border-[#e6e1e5] text-left flex items-end justify-between"><span className="font-medium">{d}</span><ChevronRight size={17} className="text-[#79747e]"/></button>)}</div></main>}
+    {page==="doctor"&&<main className="p-5"><div className="mb-5"><div className="text-[18px] font-semibold">{department}</div><div className="text-[12px] text-[#79747e] mt-1">{hospital?.name}{campus?` · ${campus}`:""}</div></div>{doctors.length?<div className="space-y-2">{doctors.map(d=><button key={d.id} onClick={()=>{setDoctor(d);setPage("slots")}} className="w-full p-4 rounded-2xl border border-[#e6e1e5] text-left flex items-center gap-3"><div className="w-11 h-11 rounded-full bg-[#f2edf7] flex items-center justify-center text-[#6750a4]"><Stethoscope size={20}/></div><div className="flex-1"><div className="font-medium">{d.name} <span className="text-[12px] text-[#79747e] ml-1">{d.title}</span></div><div className="text-[12px] text-[#79747e] mt-1">{d.specialty}</div></div><ChevronRight size={18}/></button>)}</div>:<div className="py-20 text-center text-[#79747e]">当前科室暂无可预约医生</div>}</main>}
+    {page==="slots"&&<main className="p-5"><div className="p-4 rounded-2xl bg-[#f7f2fa] mb-5"><div className="font-medium">{doctor?.name} · {doctor?.title}</div><div className="text-[12px] text-[#79747e] mt-1">{doctor?.specialty} · {hospital?.name}</div></div><div className="flex gap-2 overflow-x-auto pb-2 mb-5">{dates.map(d=><button key={d} onClick={()=>setDate(d)} className={`shrink-0 px-4 py-2.5 rounded-2xl text-[13px] ${date===d?"bg-[#6750a4] text-white":"bg-[#f7f2fa] text-[#49454f]"}`}>{d}</button>)}</div><div className="flex items-center gap-2 mb-3 text-[15px] font-semibold"><CalendarDays size={18}/>可预约号源</div><div className="grid grid-cols-3 gap-2">{slots.map(s=><button key={s} onClick={()=>setSlot(s)} className={`h-11 rounded-xl border text-[13px] ${slot===s?"border-[#6750a4] bg-[#f2edf7] text-[#6750a4]":"border-[#e6e1e5]"}`}>{s}</button>)}</div><button disabled={!slot} onClick={()=>setPage("done")} className="w-full h-12 mt-8 rounded-2xl bg-[#6750a4] text-white font-medium disabled:opacity-40">确认挂号</button></main>}
+    {page==="done"&&<main className="p-7 text-center"><div className="w-16 h-16 mx-auto mt-14 rounded-full bg-[#e8f5e9] flex items-center justify-center text-[#2e7d32] text-3xl">✓</div><div className="text-[24px] font-semibold mt-6">挂号成功</div><div className="text-[14px] text-[#79747e] mt-3">{hospital?.name} · {department}</div><div className="text-[14px] text-[#79747e] mt-1">{doctor?.name} · {date} · {slot}</div><button onClick={reset} className="w-full h-12 mt-8 rounded-2xl bg-[#6750a4] text-white font-medium">返回首页</button></main>}
+  </div></div>;
 }
