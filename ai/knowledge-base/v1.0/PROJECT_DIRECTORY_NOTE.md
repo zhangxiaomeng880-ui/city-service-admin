@@ -42,6 +42,16 @@ Project Hub 位于：`docs/project-directory.html`。
 
 **问题 → 决策 → 执行 → 产出 → 验证 → 结果。**
 
+## Project Context 资产归属
+
+Project Context 属于项目生命周期级资产，不属于某一个 Stage 的临时文档。Project Agent 负责创建/刷新；Stage Agent 只消费和补充自己产生的新确认信息。
+
+项目级上下文的优先读取顺序为：
+
+**Project Context → Previous Stage Output → Knowledge Base → User Input**。
+
+Git 中已经存在的项目上下文、阶段产出和知识资产应直接复用，不应要求用户重复提供。具体运行规则以 `AI_NATIVE_PROJECT_OS_V1.0.md`、`ai/rules/AI_RULES.md` 和 `ai/rules/STAGE_CONTRACT.md` 为准。
+
 ## 维护原则
 
 1. 新增资产优先归入已有职责目录。
@@ -49,6 +59,7 @@ Project Hub 位于：`docs/project-directory.html`。
 3. 目录职责调整时同步更新本文件。
 4. 业务规则、项目决策、AI Native 运行机制不得在本文件重复维护，应回写核心源知识库。
 5. Evolution 记录应同时登记实际产出及其地址，不能只记录思考过程。
+6. Project Context 发生变更时，应同步记录来源、时间和影响范围。
 
 ## 核心源知识库
 
