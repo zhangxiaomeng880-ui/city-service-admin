@@ -32,3 +32,19 @@
 ## AI Native 原则
 
 AI 不是单独的 Coding 工具，而是贯穿产品生命周期的协作执行者。人的核心职责是目标、判断、优先级和验收；AI 负责研究、分析、产出、执行、验证和总结，并通过 GitHub 留下可追溯的项目资产。
+
+## Project Context
+
+项目基础信息和已确认上下文属于生命周期级资产，由 Project Agent 创建/刷新，后续阶段直接复用。
+
+输入优先级：
+
+**Project Context → Previous Stage Output → Knowledge Base → User Input**。
+
+因此，继续阶段、阶段切换或 Handoff 时不应重复要求用户提供已经确认的项目上下文；只补充当前阶段缺失的 Required Input。
+
+完整规则位于：
+
+- `ai/knowledge-base/v1.0/AI_NATIVE_PROJECT_OS_V1.0.md`
+- `ai/rules/AI_RULES.md`
+- `ai/rules/STAGE_CONTRACT.md`
