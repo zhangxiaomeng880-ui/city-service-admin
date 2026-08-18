@@ -8,6 +8,15 @@
 
 ## 当前目录
 
-- `rules/` AI 工作规则
+- `rules/` AI 工作规则、Stage Contract、Command Protocol
 - `agents/` AI 角色定义
 - `workflows/` AI 工作流定义
+- `knowledge-base/` 核心知识库、设计规范、执行规则和 Evolution
+
+## Context 规则
+
+所有 Agent 统一复用：
+
+**Project Context → Previous Stage Output → Knowledge Base → User Input**
+
+只在前三层无法提供当前阶段 Required Input 时请求用户补充。
