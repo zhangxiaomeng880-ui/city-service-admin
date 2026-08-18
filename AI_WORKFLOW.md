@@ -30,6 +30,35 @@ AI 根据验收标准生成并执行测试，覆盖正常路径、边界条件�
 ## 10. Iteration
 数据和反馈进入下一轮 Research / Opportunity，形成闭环。
 
+## Stage Contract
+
+每个阶段执行前：
+
+```text
+Project Context
+      ↓
+Previous Stage Output
+      ↓
+Knowledge Base
+      ↓
+User Input（仅补充缺失 Required Input）
+```
+
+每个阶段执行必须输出：
+
+```text
+Input
+Input Verification
+Execution
+Output
+Output Verification
+Gate
+Handoff
+Status
+```
+
+状态统一为：`COMPLETED / PARTIAL / BLOCKED / SKIPPED`。
+
 ## 工作原则
 
 1. 先理解问题，再决定是否需要改代码。
@@ -38,3 +67,5 @@ AI 根据验收标准生成并执行测试，覆盖正常路径、边界条件�
 4. 需求、设计、代码、测试和发布必须保持可追溯关系。
 5. AI 输出需要经过人的产品判断与验收。
 6. 不为了展示 AI 能力而增加没有业务价值的复杂度。
+7. 已确认的 Project Context 必须跨阶段复用，不得重复索取。
+8. 同一阻塞不得循环询问；连续阻塞必须进入 Review / Evolution 并沉淀 Knowledge。
