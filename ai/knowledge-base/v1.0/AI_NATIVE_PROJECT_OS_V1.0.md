@@ -339,3 +339,40 @@ Project Evolution 与当前规则的关系：
 - 本文件回答“**当前应该怎么运行**”
 
 三者互补，但**当前规则仍以本文件为唯一事实来源**。
+
+## 20. Project Context Persistence / 项目上下文持久化规则
+
+Project Context 是**项目生命周期级上下文**，不是某个 Stage 的临时 Input。Project Initialization 负责创建/刷新 Project Context；后续所有 Agent 必须优先复用它。
+
+### 20.1 Input Source Priority
+
+Agent 执行阶段输入按以下优先级解析：
+
+1. **Project Context**：项目名称、目标、范围、版本、仓库、分支、运行环境、Workspace 等已确认基础信息。
+2. **Previous Stage Output**：上游阶段已经确认并交付的结果。
+3. **Knowledge Base**：已沉淀且适用的规则、决策、经验和模板。
+4. **User Input**：仅用于补充前三层仍缺失的必要信息，或明确覆盖已有值。
+
+### 20.2 Context Reuse Rule
+
+任何 Agent 在向用户询问前，必须先检查 Project Context、Previous Stage Output 和 Knowledge Base。已存在且仍有效的信息不得重复询问。
+
+用户明确修改某项信息时，以本次明确输入为最新值，并同步更新 Project Context 与相关记录。
+
+### 20.3 Missing Input Rule
+
+只有在缺失信息属于当前阶段的 **Required Input** 且无法从已有资产解析时，才允许请求补充。非阻塞缺失不得阻断已具备条件的工作。
+
+### 20.4 Resume / Handoff Rule
+
+`继续 [Stage]`、阶段切换和 Agent Handoff 均必须恢复已有 Project Context，不要求用户重新提供已经确认的项目基础信息。
+
+### 20.5 Execution Continuity Rule
+
+同一问题如果第一次无法解决，应明确记录 Blocked 原因和缺失项；不得通过重复询问相同信息形成循环。连续阻塞应触发 Review / Evolution 记录，并沉淀为 Knowledge Rule。
+
+### 20.6 Persistence Requirement
+
+凡本轮新确认的项目级信息、阶段状态、关键决策和执行结果，应在阶段完成后写回对应项目资产，使下一轮 Agent 可以直接复用。
+
+本规则来源：`EVOLUTION-010-PROJECT-CONTEXT-PERSISTENCE.md`、`EVOLUTION-011-EXECUTION-CONTINUITY-REVIEW.md`。
