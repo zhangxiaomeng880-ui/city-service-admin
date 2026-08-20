@@ -1,113 +1,87 @@
 # AI Native Retrospective V2.2
 
 ## 1. 本轮任务
+在 Verification Coverage 已建立的基础上，新增 User & Responsibility Data Layer，并将其作为平台基础数据维护模块接入所有阶段 Agent 的 Required Input / Handoff。同步执行独立 Audit，并在知识库与复盘更新后继续触发下一轮 Audit。
 
-在 Agent V2.1 Contract Migration 基础上，继续检查“Testing 之后是否存在未归属的其他验证”，确认后明确不新增泛化验证阶段，而建立 Verification Coverage Matrix，并把下游验证所需输入前置到对应阶段，通过人机对话完成收集。
+## 2. 核心设计决策
 
-## 2. 本轮核心结论
-
-“其他验证”不是新的 Agent 或阶段。当前验证职责已经覆盖在：
-
-- Testing：验证实现是否按需求/Acceptance Criteria 工作
-- Compliance：验证是否符合适用规则/约束
-- Audit：验证流程、Evidence、Gate、Handoff 和结论是否真实完整可追溯
-
-真正缺失的是“前置输入覆盖关系”显式化。
-
-## 3. 新增 Verification Coverage Matrix
-
-新增：`ai/rules/VERIFICATION_COVERAGE_MATRIX_V2.2.md`
-
-建立：
+用户体系不新增 User Agent，而是作为 Data Layer：
 
 ```text
-Stage Required Input
+User
 ↓
-Stage Verification
+Project Member
 ↓
-Downstream Required Input
+Role / Permission
 ↓
-Testing / Compliance / Audit
+Responsibility
 ↓
-Gate
+Task / Human Gate
+↓
+Agent Context
+↓
+Verification / Audit
 ```
 
-并明确：后置阶段发现缺失输入时，必须回溯责任前置 Agent，不得自行创造关键事实。
+Project Creator 默认 Project Owner，可变更。Role 与 Responsibility 分离；System Preset 与 User Personal Asset 分离；系统权限与项目权限分离；历史责任/权限以 Snapshot 保留。
 
-## 4. 各阶段新增/强化输入
+## 3. 阶段责任
 
-### Project
-补充责任角色、Decision Owner、风险级别、Testing/Compliance/Release/KPI/竞品适用性。
+每个实际执行阶段都需要可解析 Stage Owner。已有责任直接复用；缺失时以 Project Owner 作为默认候选，通过最小人机对话确认。按需增加 Task Assignee、Reviewer、Approver、Decision Owner。Agent 不得绕过权限层自行任命人员或修改权限。
 
-### Product
-补充 Scope/Out of Scope、Success Metrics、Decision Owner、Compliance Applicability，并强化 Acceptance Criteria 的可测试性。
+## 4. 各 Agent 接入
 
-### Design
-补充平台/设备、状态覆盖、可用性/可访问性约束、Design→Code Mapping。
+Project：初始化 Project Owner、成员、角色和责任。
+Product：Product Owner / Decision Owner。
+Design：Design Owner / Reviewer。
+Planning：Planning Owner / Engineering Owner / Reviewer。
+Engineering：Engineering Owner / Task Assignee / Reviewer。
+Testing：Testing Owner / Task Assignee / Reviewer。
+Compliance：Compliance Reviewer / Decision Owner / Approver。
+Release：Release Owner / Release Approver / Executor。
+Maintenance：Maintenance Owner / Incident Assignee / Decision Owner。
+Analytics：Analytics/Data Owner / Reviewer。
+Research：Research/Competitor Owner / Reviewer / Decision Owner。
+Audit：只读责任/权限 Snapshot，保持独立，不接受业务任务指派。
 
-### Planning
-补充 Architecture/Data/API、Security、Performance、Compliance applicability、Migration、Rollback、Test Strategy、Release Preconditions。
+## 5. 人机交互
 
-### Engineering
-补充实现映射、Test Strategy、Migration/Rollback、Runtime Config 和 Testing 所需 Evidence。
-
-### Testing
-补充测试数据、测试环境/构建、风险回归范围，并建立缺失输入回退前置 Agent 的机制。
-
-### Compliance
-补充对话式 Applicable Rules / Exception / Waiver 收集及 Rule→Evidence→Result 追溯。
-
-### Release
-补充 Release Preconditions、Testing/Compliance Gate、Smoke/Health Check、Rollback 和人工批准。
-
-### Analytics
-补充 KPI 目标方向、Data Owner 和来源字段，并支持定时任务缺失输入最小提示。
-
-### Research / Competitor
-补充竞品范围、维度、来源规则、周期和重点对象。
-
-### Maintenance
-补充影响范围、生产数据/权限/合规风险和恢复要求。
-
-## 5. 人机对话机制
-
-新增：`ai/rules/CONVERSATION_INPUT_COLLECTION_V2.2.md`
-
-统一模式：
+User Context 与 Required Input 统一遵循：
 
 ```text
-Context 自动取数
+读取已有 Context / Handoff / User Context
 ↓
-Missing Input Detection
+自动补齐
+↓
+识别缺失
 ↓
 最小提示
 ↓
-User Reply
+用户回复
 ↓
-Input Validation
+Agent 判断
 ↓
-Execute / Continue Ask / Human Gate
+满足 → 继续
+不满足 → 继续最小追问
+需要责任/授权/审批/业务取舍 → Human Gate
 ```
 
-用户不需要填写 Agent 已经知道的信息。
+## 6. Verification Boundary
+本轮再次确认不新增“其他验证阶段”：
+- Testing：实现行为
+- Compliance：规则/约束
+- Audit：流程、Evidence、Gate、Handoff、责任/权限 Snapshot 和结论可信度
 
-## 6. Audit
+## 7. Audit 结果
+本轮用户体系及 Agent 输入接入完成后执行 `AUDIT_CYCLE_V2.3_2026-08-20.md`，独立 Audit Gate = PASS。未发现 CRITICAL / HIGH / MEDIUM 问题。
 
-由于本轮修改了 Agent、Verification Coverage、Conversation Input、Knowledge Base 和 Retrospective，按照 Mandatory Audit 规则，所有更新完成后必须执行全局 Audit。
+Audit 特别确认：用户体系为 Data Layer，不是 User Agent；所有阶段均有 User Context 引用；责任、权限和历史 Snapshot 可供 Audit 追溯；Testing / Compliance / Audit 边界未被破坏。
 
-## 7. Token 复盘
+## 8. 文档同步后的规则
+Knowledge Base / Retrospective 的更新本身属于 Mandatory Audit Trigger。因此本轮文档同步完成后必须重新开启新的 Audit Cycle，不得沿用 V2.3 PASS。
 
-本轮继续采用 Context Reuse、Summary First、Delta First、Progressive Retrieval。验证覆盖通过矩阵集中管理，避免每个 Agent 重复描述全部验证规则。
+## 9. Token 复盘
+User Context 使用 Summary + Delta；只读取当前项目/阶段相关成员、责任和有效权限；历史 Snapshot 仅在 Audit 或责任追溯需要时读取。不会为了用户体系而重复读取完整用户资料。
 
-## 8. 后续制度
-
-未来新增任何验证项时必须先回答：
-
-1. 它验证的是行为、规则还是流程可信度？
-2. 应属于 Testing、Compliance 还是 Audit？
-3. 它依赖哪个前置输入？
-4. 该输入是否已经在前置阶段 Required Input 中定义？
-5. 是否需要通过对话向用户收集？
-6. 是否需要 Human Gate？
-
-如果以上问题不能明确回答，不得新增“其他验证”流程。
+## 10. 后续实现边界
+当前本轮完成的是 Agent / Data / Conversation / Audit 合同层设计与同步，不宣称已实现完整运行时用户管理 UI、数据库、认证服务或生产权限执行。运行时能力应作为后续 Engineering 任务按本合同实现并重新 Testing / Compliance / Audit。
