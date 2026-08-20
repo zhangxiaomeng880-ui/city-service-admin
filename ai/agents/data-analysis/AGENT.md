@@ -1,4 +1,4 @@
-# Data Analysis Agent
+# Data Analysis Agent V1.1
 
 ## 1. Agent Type
 
@@ -156,7 +156,9 @@ Optimization Recommendation
  ↓
 Quality Gate
  ↓
-Output
+Output Artifact
+ ↓
+Execution Record / Usage Record
  ↓
 Handoff
 ```
@@ -169,9 +171,11 @@ For optional Product capability invocation, the user may choose Data Analysis, C
 
 ## 14. Output
 
-### Structured
+### Structured Output
 
 - task_id
+- artifact_id
+- artifact_version
 - data_scope
 - data_quality
 - KPI
@@ -186,6 +190,14 @@ For optional Product capability invocation, the user may choose Data Analysis, C
 - follow_up_metrics
 - quality
 - handoff
+
+### Output Artifact
+
+The standard business output is a versioned `KPI Analysis Report`, `Weekly KPI Report`, or `Data Quality Report` according to Task Type.
+
+The Artifact must identify KPI definition version, data source / batch where applicable, intended consumer, validity / supersession information, supporting evidence, and source Task.
+
+The Artifact is reusable by Product and other downstream Agents. Runtime logs, Model Trace, MCP calls, Token and Cost details remain in Execution / Usage Records rather than the business report body.
 
 ### Human-readable
 
@@ -214,6 +226,7 @@ Check:
 - data quality;
 - calculation correctness;
 - evidence traceability;
+- Output Artifact completeness / version;
 - interpretation validity;
 - recommendation relevance;
 - output usability;
@@ -223,7 +236,7 @@ Result: `PASS / PARTIAL / BLOCKED / FAIL`.
 
 ## 17. Handoff
 
-Results may be handed to Product, Release, Maintenance, or Knowledge Base. Identify intended use, result version, direct-consumption status, and required human decision.
+Output Artifact may be handed to Product, Release, Maintenance, or Knowledge Base. Identify intended use, result version, direct-consumption status, required human decision, and evidence references.
 
 ## 18. State
 
@@ -235,11 +248,11 @@ Exceptions: `PARTIAL / BLOCKED / FAILED / SKIPPED`.
 
 ## 19. Parallel Task
 
-Weekly KPI Tasks and on-demand analyses use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, and Cost records. Results are shared through structured outputs / Project Context / Knowledge Base.
+Weekly KPI Tasks and on-demand analyses use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, Cost, and Execution Records. Results are shared through structured outputs / Output Artifacts / Project Context / Knowledge Base.
 
 ## 20. Reuse
 
-Reuse valid, current, sufficiently scoped, quality-approved KPI analyses and precomputed metrics. Re-run only when missing, stale, insufficient, invalid, or explicitly requested.
+Reuse valid, current, sufficiently scoped, quality-approved KPI Output Artifacts and precomputed metrics. Re-run only when missing, stale, insufficient, invalid, or explicitly requested. When reused, record the referenced `artifact_id` / version.
 
 ## 21. Token & Cost
 
@@ -252,11 +265,11 @@ Record at `Project → Phase → Task → Step → Tool / MCP Run → Model Run`
 - escalation;
 - tool / MCP cost when available.
 
-Cost optimization uses Tool First, precomputed metrics, cache / reuse, duplicate-query avoidance, and escalation only when quality requires it.
+Cost optimization uses Tool First, precomputed metrics, cache / reuse, duplicate-query avoidance, and escalation only when quality requires it. Usage records remain separate from the business report Artifact.
 
 ## 22. Audit
 
-This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md`. It must retain sufficient evidence for independent Audit and cannot self-certify Audit.
+This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md` and `EXECUTION_RECORD_CONTRACT_V1.0.md`. It must retain sufficient execution, artifact, evidence, and usage records for independent Audit and cannot self-certify Audit.
 
 ## 23. Knowledge Handoff
 
