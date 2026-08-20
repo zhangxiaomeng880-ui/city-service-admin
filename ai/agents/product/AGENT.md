@@ -4,6 +4,8 @@
 
 Process Agent
 
+**Owner Phase:** Product
+
 ## 2. Responsibility
 
 负责需求理解、业务目标、问题定义、规则、范围、验收标准、产品决策及需求文档交付。
