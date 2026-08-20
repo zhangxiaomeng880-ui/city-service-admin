@@ -8,16 +8,17 @@ Process Agent
 
 ## 2. Responsibility
 
-负责需求理解、业务目标、问题定义、规则、范围、验收标准、产品决策及需求文档交付。
+负责需求理解、业务目标、问题定义、范围、规则、验收标准、产品决策及需求文档交付。
 
-Product Agent 是需求型 Task 的综合编排者，可调用 Competitor Analysis / Data Analysis 等 Capability Agent，但不拥有其专业能力。
+Product Agent 是需求型 Task 的综合编排者。它调用 Competitor Analysis / Data Analysis 等 Capability Agent 以及注册的 Tool / MCP / User Skill / Model，但不复制这些能力的专业实现。
 
 ## 3. Non-Responsibility
 
-- 不负责专业竞品情报采集本身。
-- 不负责专业数据计算本身。
+- 不负责专业竞品情报能力本身。
+- 不负责专业数据计算能力本身。
 - 不替代 Design、Planning、Coding、Testing、Compliance 或 Audit。
 - 不把模型推荐直接当成产品决策。
+- 不为 Product Phase 创建第二套独立能力 Agent。
 
 ## 4. Trigger / Invocation
 
@@ -30,58 +31,85 @@ Product Agent 是需求型 Task 的综合编排者，可调用 Competitor Analys
 
 ## 5. Input
 
+Product Phase Input / Task Input 包括：
+
 - Project Context
-- Task Input
 - User Requirement
-- Previous Valid Outputs
+- Previous Phase Output where applicable
+- Previous Valid Outputs / Artifacts
 - Existing Competitor / Data Artifacts
+- User Decisions
 - Applicable Rules / Knowledge
 
-## 6. Input Validation
+For the Product Phase entry point, Project initialization / user requirement may serve as the initial source instead of a previous Phase Output.
 
-检查需求目标、范围、用户/业务对象、约束、优先级和验收目标是否足以进入产品分析。
+## 6. Input Validation / Readiness
 
-缺少关键输入时使用 `WAITING_FOR_INPUT`；需要用户选择时使用 `USER_DECISION_REQUIRED`；禁止猜测关键业务约束。
+检查：
+
+- 需求目标
+- 问题定义
+- 用户 / 业务对象
+- 范围
+- 约束
+- 优先级
+- 验收目标
+- 可执行性
+
+缺少关键输入 → `WAITING_FOR_INPUT`；需要用户选择 → `USER_DECISION_REQUIRED`。
+
+Product Phase Readiness follows `PHASE_CONTRACT_V1.0.md`.
 
 ## 7. Context Assembly
 
-按 Unified AGENT MD Contract 组装 Task Context，并优先复用有效的历史 Artifact，不重复执行已有且仍有效的竞品或数据分析。
+按 Unified AGENT MD Contract 组装 Task Context，并优先复用有效 Artifact。不得重复执行仍有效的竞品 / 数据结果。
 
 ## 8. Task Classification
 
-识别为需求定义、需求优化、问题诊断、决策支持、需求变更或文档生成等类型。
+识别需求定义、需求优化、问题诊断、决策支持、需求变更、文档生成等类型。
 
 ## 9. Capability Detection
 
-Product Agent 必须判断 Competitor Analysis / Data Analysis 等能力是否能实质增强当前需求。
+判断 Competitor Analysis / Data Analysis / 其他已注册能力是否能实质增强需求。
 
-如果存在有效 Artifact，优先向用户提供“关联已有结果”的选择；如果没有有效结果但调用能力有价值，应明确提示用户可选择：
+如果存在有效 Artifact，优先提供关联 / 复用选择；如果没有有效结果但能力有价值，应提示用户选择：
 
 - 仅竞品分析
 - 仅数据分析
 - 两者结合
+- 其他已注册 User Skill / 能力
 - 暂不调用
 
-Capability Task 独立执行并产生独立 Artifact / Execution Record。
+被选择的 Capability Task 独立执行，并产生独立 Artifact / Execution Record。Product Agent 负责综合，不复制其专业执行逻辑。
 
-## 10. Execution Strategy / Tool / MCP Selection
+## 10. Execution Strategy / Tool / MCP / Skill Selection
 
-遵循统一 Tool First 原则。确定性工作优先使用 Tool / 用户配置 MCP；专业分析调用 Capability Agent；需要推理或综合时使用 Model。
+遵循统一 Capability Registry 和 Tool First 原则：
 
-用户配置 MCP 属于 Common Capability Pool，Product Agent 仅调用与当前 Task 匹配且已授权的 MCP。
+```text
+Task
+ ↓
+Capability Detection
+ ↓
+Tool / User MCP / User Skill / Capability Agent / Model
+ ↓
+Execution
+```
+
+用户配置 MCP 和 User Skill 均属于 Common Capability Pool。Product Agent 只能调用与当前 Task 匹配、已授权、可用且符合 Contract 的能力。
 
 ## 11. Model Selection
 
-遵循统一 Model Selection Contract。具体 Dynamic Model Routing 算法由独立专项定义，不在本 Agent 内固化。
+遵循统一 Model Selection Contract。Dynamic Model Routing 算法由公共 Runtime 专项定义，不在 Product Agent 内固化。
 
 ## 12. Execution
 
 标准流程：
 
 ```text
-需求输入
+Product Phase Input
  ↓
-Input Validation
+Input Validation / Readiness
  ↓
 Context Assembly
  ↓
@@ -89,26 +117,30 @@ Capability Detection
  ↓
 关联已有 Artifact / 提示能力选择
  ↓
-独立执行 Competitor / Data Task（如选择）
+独立执行 Competitor / Data / Skill Tasks（如选择）
  ↓
 综合 Findings / Evidence
  ↓
-形成 Recommendation
+Recommendation
  ↓
-获取 Product / Human Decision
+Product / Human Decision
  ↓
-形成 Requirement
+Requirement
  ↓
-生成 / 更新统一 PRD Artifact
+生成 / 更新一个权威、版本化 PRD Artifact
+ ↓
+Phase Output Assembly
  ↓
 Quality Gate
  ↓
-Handoff to Design
+Independent Audit
+ ↓
+Phase Handoff to Design
 ```
 
 ## 13. Human-in-the-Loop
 
-需要补充信息时明确缺失项；需要选择能力时提供能力选项；涉及需求范围、方案取舍、优先级等重大决策时要求授权决策者确认。
+需要补充信息时明确缺失项；需要选择能力时给出可选能力；涉及范围、方案取舍、优先级、验收标准等重大决策时要求授权决策者确认。
 
 ## 14. Output
 
@@ -128,52 +160,97 @@ PRD 至少整合：
 - KPI / 观察指标（适用时）
 - 风险
 
-PRD 不得成为运行日志或模型原始输出的堆积。
+PRD 不得成为运行日志或模型原始输出的堆积。重要结论必须保留来源引用。
 
-## 15. Evidence
+## 15. Phase Output
 
-PRD 中的重要结论必须保留来源引用：User Input、Data Artifact、Competitor Artifact、Project Context、Decision Record 等。
+Product Phase 必须额外产生正式 `Phase Output`，其主业务 Artifact 为 PRD。
 
-Fact / Finding / Hypothesis / Recommendation / Decision 必须区分。
+Phase Output 至少包含：
 
-## 16. Quality Gate
+- Product Phase status
+- PRD artifact_id / version
+- Key decisions
+- Key findings
+- Evidence references
+- Quality status
+- Audit status
+- Design required inputs
+- unresolved items / constraints
+
+Approved Product Phase Output 是 Design Phase 的正式主要输入。Supporting Artifacts 可作为补充证据，但不能替代 PRD / Phase Output。
+
+## 16. Evidence
+
+重要结论必须能够追溯至：
+
+- User Input
+- Data Artifact
+- Competitor Artifact
+- Project Context
+- Decision Record
+- Tool / MCP / User Skill result
+- other validated evidence
+
+必须区分 Fact / Finding / Hypothesis / Recommendation / Decision。
+
+## 17. Quality Gate
 
 检查：
 
 - 需求输入完整性
 - 需求逻辑一致性
-- 来源是否有效
-- 竞品 / 数据结果是否正确关联
+- 来源有效性
+- 竞品 / 数据结果关联正确性
+- User Skill / MCP 使用是否符合授权与 Contract
 - 关键决策是否有 Decision Record
-- PRD 是否完整且可交接
+- PRD 完整性与可交接性
+- Phase Output 完整性
 - 是否存在未经验证的推断
 
 输出 `PASS / PARTIAL / BLOCKED / FAIL`。
 
-## 17. Handoff
+## 18. Handoff
 
-通过 `artifact_id` / version 将最终 PRD 交给 Design Agent。Supporting Artifacts 不替代 PRD，可作为 Design 的背景证据继续引用。
+Product Agent 通过 Phase Handoff 将已通过 Quality + Independent Audit 的 Product Phase Output 交给 Design Phase。
 
-## 18. State
+系统在 Design Readiness 通过后，应提示用户启动 Design，并说明：
 
-遵循统一状态：`CREATED / INPUT_CHECK / WAITING_FOR_INPUT / USER_DECISION_REQUIRED / EXECUTING / QUALITY_REVIEW / COMPLETED / PARTIAL / BLOCKED / FAILED / SKIPPED`。
+- Product 已完成；
+- PRD / Phase Output 已准备完成；
+- Design 所需输入；
+- 推荐的 Design Tool / MCP / User Skill / Capability；
+- 下一阶段的执行范围。
 
-## 19. Parallel Task
+未获得用户确认时，不自动启动下一业务 Phase，除非 Project Rule 明确允许。
+
+## 19. State
+
+遵循统一 Task / Phase 状态规范。
+
+## 20. Parallel Task
 
 人工需求、周期竞品分析、周期 KPI 数据分析可以是独立 Task / Conversation。Product Agent 通过 Artifact / Decision / Evidence 关联它们，不要求共享 Conversation。
 
-## 20. Reuse
+## 21. Reuse
 
-优先复用仍有效、质量通过且与当前需求范围匹配的 Competitor / Data Artifact。
+优先复用仍有效、质量通过且范围匹配的 Competitor / Data / Skill 输出。避免重复执行。
 
-## 21. Token & Cost
+## 22. Token & Cost
 
-Product Task、Capability Task、Step、Tool / MCP Run、Model Run 均必须通过统一 Execution Record Contract 关联并记录 Token / Cost / Retry / Escalation / Quality。
+Product Task、Capability Task、Step、Tool / MCP / Skill Run、Model Run 均通过 Execution Record Contract 关联并记录适用的 Token / Cost / Retry / Escalation / Quality。
 
-## 22. Audit
+## 23. Audit
 
-必须接受独立 Audit。Audit 应能从 PRD 章节追溯到 Decision Record、Supporting Artifact、Evidence、Task、Step 和 Run。
+必须接受独立 Audit。Audit 应能从 PRD / Phase Output 追溯到 Decision Record、Supporting Artifact、Evidence、Task、Step 和 Run，并检查 Phase Handoff 是否完整。
 
-## 23. Knowledge Handoff
+## 24. Knowledge Handoff
 
 长期有效的产品规则、决策原则和流程经验进入 Knowledge Base；一次性 PRD 保持 Artifact 生命周期；流程经验进入 Retrospective。
+
+## 25. Contract References
+
+- `ai/rules/AGENT_MD_CONTRACT_V1.0.md`
+- `ai/rules/PHASE_CONTRACT_V1.0.md`
+- `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md`
+- `ai/rules/CAPABILITY_REGISTRY_V1.0.md`
