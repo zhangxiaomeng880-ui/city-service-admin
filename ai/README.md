@@ -1,56 +1,46 @@
-# AI Native V1.1
+# AI Native V1.2
 
 这里维护 AI 在项目生命周期中的角色、规则和工作流。
 
-## 目标
+## Lifecycle
 
-让 AI 从单纯的 Coding 助手升级为贯穿 Research → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics → Maintenance → Audit → Iteration 的协作执行体系。
+**Project → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics / Maintenance → Audit → Iteration → Product**
 
 Iteration 是生命周期循环，不是 Agent；Conversation Orchestrator 是交互/调度层，不是新的业务 Agent。
 
-## 核心职责边界
+## Project First
 
-- **Testing AGENT**：验证功能是否正确工作。
-- **Compliance AGENT**：验证是否符合已确认规则、约束和适用要求。
-- **Audit AGENT**：独立验证流程、结论、证据和 Gate 是否真实、完整、可追溯。
+Project Agent 是新项目入口：收集最小必要项目资料，建立 Project Context，并检查仓库、分支最新状态、工作树、依赖、Runtime、环境、Build/Test/Preview、版本和 Figma 等基础设施。
 
-三者独立，不得互相替代，也不得自动继承彼此的 PASS。
+## Human-in-the-Loop
 
-## Conversation Orchestration
+所有阶段使用自然语言交互。阶段内部可自动执行；阶段完成后必须向用户汇报并询问是否进入下一阶段。需要授权、关键决策、高风险操作或阻塞时主动提示用户。
 
-用户无需指定 Agent，直接使用自然语言表达目标、继续、修改或回答问题。系统负责：
+## Quality Boundary
 
-**User Intent → Context Resolution → Agent Routing → Required Input → Action → Verification / Gate → Next Action**
+- Testing：功能正确性
+- Compliance：规则/约束符合性
+- Audit：流程、证据、结论和 Gate 的独立审计
 
-能够自动执行时直接执行；只有 Required Input、Human Gate、高风险操作、规则冲突或阻塞才主动询问用户。
+三者独立。
 
-## Minimum-Token Execution
+## Weekly Project Intelligence
 
-所有 Agent 采用：
+项目可配置 KPI/Target/Source/Schedule 和竞品清单/维度/Source/Schedule。系统每周自动生成 KPI 周报和项目竞品周报，并保留来源明细和 Evidence。
 
-**Context Reuse → Progressive Retrieval → Summary First → Incremental Context → No Redundant Confirmation → Compressed Output**
+## Minimum Token
 
-Token 优化不能通过省略关键规则、证据、验证或 Gate 实现。
+统一采用：Context Reuse、Progressive Retrieval、Summary First、Delta First、Evidence on Demand、Compressed Output。不得以 Token 优化为由省略关键验证。
 
-## 当前目录
+## V1.2 Core Documents
 
-- `rules/` AI 工作规则、Stage Contract、Conversation Orchestration、Command Protocol
-- `agents/` AI 角色定义及各 Agent 对话交互矩阵
-- `workflows/` AI 工作流定义
-- `knowledge-base/` 核心知识库、设计规范、执行规则和 Evolution
-
-## V1.1 核心规则
-
-- `rules/AI_RULES_V1.1.md`
-- `rules/STAGE_CONTRACT_V1.2.md`
-- `rules/CONVERSATION_ORCHESTRATION_V1.1.md`
-- `agents/AGENT_INTERACTION_MATRIX_V1.1.md`
-- `knowledge-base/v1.1/AI_NATIVE_PROJECT_OS_V1.1.md`
-
-## Context 规则
-
-所有 Agent 统一复用：
-
-**Project Context → Previous Stage Output → Knowledge Base → Current User Message**
-
-只在前三层无法提供当前阶段 Required Input 时请求用户补充。
+- `rules/AI_RULES_V1.2.md`
+- `rules/STAGE_CONTRACT_V1.3.md`
+- `rules/CONVERSATION_ORCHESTRATION_V1.2.md`
+- `rules/SCHEDULED_INTELLIGENCE_V1.2.md`
+- `agents/README.md`
+- `agents/project/AGENT.md`
+- `agents/analytics/AGENT.md`
+- `agents/research/COMPETITOR_WEEKLY.md`
+- `knowledge-base/v1.2/AI_NATIVE_PROJECT_OS_V1.2.md`
+- `knowledge-base/v1.2/PROJECT_WEEKLY_INTELLIGENCE_V1.2.md`
