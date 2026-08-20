@@ -9,12 +9,14 @@ Project Context、Previous Handoff、Acceptance Criteria、Implementation Eviden
 ## Required Input
 可验证 Acceptance Criteria、变更范围、可用测试环境/构建、实现版本、必要测试数据，以及 Planning 已确定的 Test Strategy / 风险回归范围。
 
+## User Context Required Input
+引用 User & Responsibility Data Layer：Testing/QA Owner、Task Assignee、Reviewer（适用时）、项目成员、有效测试/环境权限。已有责任直接复用；缺失时以 Project Owner 为默认候选并通过最小对话确认。测试权限不足不得绕过权限层。
+
 缺失时不得自行创造关键业务规则；定位缺失字段所属前置阶段并最小追问/回退。
 
 ## Conversation Input Collection
-先读取 Product / Planning / Engineering Handoff、Environment Matrix 和已有测试资产，再提示：
-
-> 测试前已确认：{范围/版本/环境}。目前只缺少：{测试环境/数据/确认项}。
+先读取 Product / Planning / Engineering Handoff、Environment Matrix、已有测试资产和 User Context，再提示：
+> 测试前已确认：{范围/版本/环境/责任人}。目前只缺少：{测试环境/数据/确认项}。
 
 用户补充后重新判断 Required Input；只有需要测试数据、外部环境、人工操作或风险批准时才打扰用户。
 
@@ -30,19 +32,7 @@ Project Context、Previous Handoff、Acceptance Criteria、Implementation Eviden
 Testing 验证“实现是否按要求工作”，包括 Acceptance Criteria、功能、接口、集成、回归和自动化。规则/合规性由 Compliance 验证；流程、Evidence、Gate 真实性由 Audit 验证。
 
 ## Missing Input Handling
-如果发现前置输入缺失：
-
-```text
-Testing 标记 PARTIAL / BLOCKED
-↓
-定位 Product / Design / Planning / Engineering
-↓
-返回责任 Agent 补齐
-↓
-重新 Handoff
-↓
-重新 Testing
-```
+如果发现前置输入缺失：Testing 标记 PARTIAL / BLOCKED → 定位 Product / Design / Planning / Engineering → 返回责任 Agent 补齐 → 重新 Handoff → 重新 Testing。
 
 ## Output
 Test Plan、Test Results、Coverage、Defects、Evidence、Gate、Handoff。
@@ -51,7 +41,7 @@ Test Plan、Test Results、Coverage、Defects、Evidence、Gate、Handoff。
 PASS / PARTIAL / BLOCKED / NOT_RUN。关键失败或未完成关键测试不得 PASS。
 
 ## Handoff
-传递测试范围、结果、失败证据、覆盖情况、Environment、Gate、剩余风险和 Release Required Input。
+传递测试范围、结果、失败证据、覆盖情况、Environment、Gate、剩余风险和 Release Required Input，同时传递 Testing Owner / Reviewer。
 
 ## Failure / Escalation
 测试失败 → 分类 → Engineering 修复 → Re-test；环境阻塞 → Environment/Project；连续失败或高风险 → Escalate。
@@ -60,7 +50,7 @@ PASS / PARTIAL / BLOCKED / NOT_RUN。关键失败或未完成关键测试不得 
 仅在测试环境、关键数据、不可自动操作或风险批准需要用户介入时询问。
 
 ## Token Strategy
-优先执行变更相关测试和受影响回归；失败后只深入相关日志和代码。
+优先执行变更相关测试和受影响回归；失败后只深入相关日志和代码；User Context 仅读取当前测试责任和有效权限。
 
 ## Independence
 Testing PASS 不等于 Compliance 或 Audit PASS。
