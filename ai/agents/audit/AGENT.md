@@ -1,8 +1,10 @@
-# Audit Agent V1.1
+# Audit Agent V1.2
 
 ## 1. Agent Type
 
 Process / Independent Assurance Agent.
+
+**Owner Phase:** Cross-Phase / Gate & Assurance
 
 ## 2. Responsibility
 
