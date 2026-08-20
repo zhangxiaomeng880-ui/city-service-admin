@@ -1,0 +1,23 @@
+schema: TestCaseAuditRecord
+version: 1.0
+required: [audit_id, test_case_set_id, status]
+fields:
+  audit_id: string
+  project_id: string
+  test_case_set_id: string
+  task_id: string
+  auditor_agent: string
+  auditor_version: string
+  checks:
+    requirement_coverage: [PASS, FAIL, NA]
+    acceptance_criteria_coverage: [PASS, FAIL, NA]
+    test_type_coverage: [PASS, FAIL, NA]
+    positive_negative_boundary: [PASS, FAIL, NA]
+    version_consistency: [PASS, FAIL, NA]
+    automation_suitability: [PASS, FAIL, NA]
+    evidence_completeness: [PASS, FAIL, NA]
+  findings: [string]
+  required_changes: [string]
+  evidence_refs: [string]
+  status: [AUDIT_PASS, AUDIT_FAIL, AUDIT_BLOCKED]
+  created_at: datetime
