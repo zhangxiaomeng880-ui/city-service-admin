@@ -1,63 +1,40 @@
-# Phase Contract V1.0
+# Phase Contract V1.1
 
-## 1. Purpose
+## Purpose
 
-A Phase is a project-level execution boundary. Every Phase MUST use the same core Input → Validation → Execution → Output → Gate model as its owning Process Agent.
+A Phase is a lifecycle orchestration boundary over an existing Process Agent. A Phase MUST NOT create a second execution framework, duplicate Process Agent capability, or define a separate professional workflow.
 
-The Phase is not a separate Agent layer. The Process Agent is the executable owner of the Phase. The Phase invokes the Process Agent and its registered capabilities; it MUST NOT create duplicate Phase-specific Agents for the same responsibility.
+The Phase invokes the Process Agent assigned to it. Phase Input, Execution, Output, Quality Gate, Audit and Handoff MUST use the same contract semantics already defined for Process Agents in `AGENT_MD_CONTRACT_V1.0.md`.
 
-## 2. Core Principle
+## 1. Phase and Process Agent
 
 ```text
-Phase Input
-  ↓
-Process Agent Input
-  ↓
-Input Validation / Readiness
-  ↓
-Task Classification
-  ↓
-Capability Detection
-  ↓
-Tool / MCP / Skill / Capability Agent / Model Selection
-  ↓
-Process Agent Execution
-  ↓
-Phase Output
-  ↓
-Quality Gate
-  ↓
-Independent Audit Gate
-  ↓
-Phase Handoff
-  ↓
-Next Phase Input
+Phase
+ ↓ invokes
+Process Agent
+ ↓ executes using
+Unified AGENT MD Contract
 ```
 
-The Phase and its Process Agent MUST share the same execution contract. A Phase MUST NOT have a weaker input, execution, output, or gate standard than its Process Agent.
+The Phase manages lifecycle orchestration: readiness, invocation, completion, handoff and next-phase transition. The Process Agent owns the professional work.
 
-## 3. Phase Input
+The Phase does not create another Agent layer.
 
-Every Phase MUST define a structured input contract containing:
+## 2. Phase Input
 
-- phase_id;
-- project_id;
-- previous_phase_id where applicable;
-- previous_phase_output / required source Artifacts;
-- current Task inputs;
-- applicable project rules;
-- required user decisions;
-- relevant validated previous outputs.
+A Phase receives:
 
-For all subsequent lifecycle phases, the previous Phase's approved Phase Output is the formal primary input boundary of the next Phase.
+- the previous Phase's approved Phase Output as the canonical input for sequential lifecycle execution;
+- Project Context;
+- current Task input;
+- valid decisions and evidence;
+- required user input.
 
-A downstream Phase MUST NOT require the user to manually reconstruct information already present in the approved upstream Phase Output.
+The next Phase MUST NOT ask the user to reconstruct information already contained in the approved upstream Phase Output.
 
-Supporting Artifacts may be referenced as additional evidence / context, but they do not replace the previous Phase Output.
+## 3. Phase Input / Readiness Gate
 
-## 4. Phase Readiness
-
-Before execution, the Phase performs a Readiness Check using the same validation principles as its Process Agent:
+The Phase uses the same Input Validation principles and gate semantics as the owning Process Agent:
 
 - completeness;
 - validity;
@@ -73,210 +50,200 @@ Statuses:
 - `USER_DECISION_REQUIRED`
 - `BLOCKED`
 
-A Phase cannot start substantive execution when a mandatory input is unresolved.
+A Phase cannot invoke substantive Process Agent execution while required inputs are unresolved.
 
-## 5. Phase Execution
+## 4. Phase Execution
 
-The Phase MUST use the same execution strategy contract as Process Agents:
+When `READY`, the Phase invokes its existing Process Agent. It does not perform the professional execution itself.
+
+The Process Agent uses the same common runtime:
 
 ```text
 Task Classification
-        ↓
+ ↓
 Capability Detection
-        ↓
-Tool / MCP / User Skill / Capability Agent / Model
-        ↓
+ ↓
+Capability Registry
+ ↓
+Tool / User MCP / User Skill / Capability Agent / Model
+ ↓
 Execution
+ ↓
+Quality Gate
+ ↓
+Agent Output
 ```
 
-The Phase does not maintain a second capability implementation. It calls the registered capabilities of the owning Process Agent through the common runtime.
+The Phase records the invocation and consumes the Process Agent's structured output.
 
-User-configured MCPs are part of the Common Capability Pool and may be selected when authorized and appropriate.
+## 5. Capability Types
 
-User Skills are also a Common Capability Pool type. A User Skill is a reusable user-provided skill / instruction package that can guide or perform a declared capability. It must be applicable, registered / discoverable, and compatible with System Rules, Project Rules, permissions, and the Agent Contract.
+The Common Capability Pool contains:
 
-The Phase MUST record execution evidence, Tool / MCP / Skill Runs where applicable, Model Runs, Token, Cost, latency, retry, escalation, and quality data according to the Execution Record Contract.
+- `TOOL` — Built-in / System or Project Tool
+- `USER_MCP` — User-configured MCP
+- `USER_SKILL` — User-provided reusable Skill
+- `CAPABILITY_AGENT` — Registered specialist capability Agent
+- `MODEL` — Model capability
 
-## 6. Phase Output
+A Phase does not create any of these. It invokes the Process Agent, and the Process Agent discovers and selects registered capabilities through the Capability Registry.
 
-Every Phase MUST produce a formal, structured Phase Output. Phase completion without Phase Output is invalid.
+User Skills are treated as a first-class capability type alongside User MCPs. They must be applicable, discoverable / registered where required, authorized, compatible with System and Project Rules, and traceable when materially used.
 
-The Phase Output MUST contain at minimum:
+## 6. Mandatory Phase Output
+
+Every Phase MUST produce a formal, versioned Phase Output Artifact. Phase completion without Phase Output is invalid.
+
+The Phase Output MUST contain or reference:
 
 - phase_id;
 - phase_status;
-- output_artifacts;
-- key decisions;
-- key findings where applicable;
+- completed work;
+- decisions;
+- findings where applicable;
 - evidence references;
 - quality status;
 - audit status;
-- downstream inputs;
-- unresolved items / constraints.
+- downstream input package;
+- unresolved items / constraints;
+- source Process Agent and version;
+- Artifact version;
+- provenance;
+- handoff readiness.
 
-The Phase Output is a business handoff artifact, not merely an execution log.
+Phase Output is a business handoff artifact, not an execution log.
 
-## 7. Phase Output as Next Phase Input
+## 7. Phase Output → Next Phase Input
 
-The approved Phase Output is the formal input boundary of the next Phase.
+The approved Phase Output is the canonical input boundary of the next Phase:
 
 ```text
-Product Output
-   ↓
-Design Input
-
-Design Output
-   ↓
-Planning Input
-
-Planning Output
-   ↓
-Coding Input
-
-Coding Output
-   ↓
-Testing Input
-
-Testing Output
-   ↓
-Release Input
-
-Release Output
-   ↓
-Maintenance Input
+Product Output → Design Input
+Design Output → Planning Input
+Planning Output → Coding Input
+Coding Output → Testing Input
+Testing Output → Release Input
+Release Output → Maintenance Input
 ```
 
-Each transition MUST preserve provenance, version information, decisions, constraints, and unresolved items.
+The downstream Phase may add its own Task-specific inputs and valid supporting evidence, but MUST NOT replace the canonical upstream Phase Output.
 
-## 8. Phase Gate
+## 8. Phase Gate = Process Agent Gate
 
-Phase gates MUST be identical in principle to Process Agent gates.
+The Phase MUST use the same gate principles and outcome vocabulary as its Process Agent. It MUST NOT create a weaker or separate gate standard.
 
-A Phase MUST pass:
+The common gates are:
 
-1. Input Quality Gate
-2. Execution Quality Gate
-3. Output Quality Gate
-4. Evidence Quality Gate
-5. Handoff Quality Gate
-6. Independent Audit Gate
+1. Input Quality
+2. Execution Quality
+3. Output Quality
+4. Evidence Quality
+5. Handoff Quality
+6. Independent Audit where required
 
-Standard gate outcomes:
+Outcomes:
 
 - `PASS`
 - `PARTIAL`
 - `BLOCKED`
 - `FAIL`
 
-A Phase is formally complete only when its required gates pass.
+The Phase may additionally verify that its mandatory Phase Output exists and is consumable by the next Phase; this is a completion check, not a new quality standard.
 
 ## 9. Phase Handoff
 
-After successful completion, the system creates a structured Phase Handoff:
+After Agent Output, required Quality Gate and required Audit:
+
+```text
+Agent Output
+ ↓
+Phase Output
+ ↓
+Phase Handoff
+ ↓
+Next Phase Readiness Check
+ ↓
+User Start Confirmation
+ ↓
+Next Phase invokes its Process Agent
+```
+
+The Handoff references the approved Phase Output rather than duplicating its content.
 
 ```yaml
 handoff_id:
 project_id:
 from_phase:
 to_phase:
+source_agent:
+source_agent_version:
 source_phase_output:
 required_inputs:
 optional_inputs:
 readiness:
-recommended_tasks:
+missing_inputs:
+required_decisions:
+recommended_next_tasks:
+expected_capabilities:
 next_process_agent:
+user_confirmation_required:
 ```
 
-The Handoff MUST reference the approved Phase Output rather than duplicating its content.
+## 10. Next Phase Prompt
 
-## 10. User Confirmation for Next Phase
-
-Completion of a Phase does not silently start the next business Phase.
-
-After Quality + Audit + Readiness pass, the system SHOULD proactively notify the user:
+When the next Phase is ready, the system should proactively tell the user:
 
 - current Phase is complete;
-- Phase Output is ready;
-- next Phase is ready to start;
-- required inputs are satisfied;
-- recommended Tools / MCPs / Skills / Capability Agents are available where applicable.
+- Phase Output is available;
+- next Phase is ready;
+- required input is satisfied;
+- which Process Agent will be invoked;
+- expected Tool / MCP / User Skill / Capability Agent / Model types may be used;
+- pending decisions, if any;
+- explicit action to start or defer.
 
-The user confirms whether to start the next Phase unless an explicit project rule authorizes automatic progression.
+Example:
 
-The prompt should explain the next Phase's expected Input, Output, and planned execution strategy at a useful level.
+> Product 阶段已完成，PRD 已通过与 Product Agent 相同的阶段质量门禁及要求的审计。PRD、业务规则和验收标准已作为 Design 的标准输入准备完成。下一阶段将调用 Design Agent，并通过 Capability Registry 选择可用 Tool / MCP / User Skill / Capability Agent / Model。是否启动 Design 阶段？
 
-## 11. Phase / Conversation Relationship
+The system MUST NOT silently start a new business Phase without required user confirmation unless an explicit Project Rule authorizes automatic progression.
 
-Phase and Conversation are different concepts.
+## 11. Parallel Tasks
 
-One Phase may contain multiple independent Tasks and Conversations. Phase-level Output aggregates the approved results needed for the next Phase.
+A Phase may contain multiple independent Tasks / Conversations. Each retains independent Context, State, Execution Record, Token / Cost, Model / Tool / MCP / Skill Runs, and outputs. The Process Agent may aggregate valid results into the Phase Output.
 
-```text
-Phase
-├── Task / Conversation A
-├── Task / Conversation B
-└── Task / Conversation C
-        ↓
-   Phase Output
-```
+## 12. No Duplicate Phase Execution
 
-## 12. Product → Design Example
+A Phase MUST call the existing Process Agent capability. It MUST NOT create a second Phase Agent or duplicate the Process Agent's Input / Execution / Output / Gate logic.
 
-Product Phase MUST produce a PRD as its principal business Artifact for a requirement-type project.
+If a Phase requires new professional behavior, update the owning Process Agent or a reusable Capability Agent / shared runtime and audit the change.
 
-The PRD may integrate:
-
-- user requirements;
-- Competitor Analysis Artifacts;
-- Data Analysis Artifacts;
-- Product Decisions;
-- business rules;
-- acceptance criteria.
-
-After Product Quality + Audit pass, the Product Phase Output becomes the primary Design Phase input.
-
-The system then performs Design Readiness and prompts the user to start Design, including relevant Design capabilities such as registered Figma / MCP / User Skills where applicable.
-
-## 13. Phase Lifecycle
+## 13. Standard Phase Lifecycle
 
 ```text
-CREATED
+Phase Input
  ↓
-INPUT_CHECK
+Phase Readiness Gate
  ↓
-READY / WAITING_FOR_INPUT
+Invoke Process Agent
  ↓
-EXECUTING
+Agent Input / Execution / Output / Quality Gate
  ↓
-OUTPUT_VALIDATION
+Mandatory Phase Output
  ↓
-QUALITY_GATE
+Required Audit
  ↓
-AUDIT_GATE
+Phase Handoff
  ↓
-COMPLETED
+Next Phase Readiness
  ↓
-HANDOFF_READY
- ↓
-USER_CONFIRMATION
- ↓
-NEXT_PHASE
+User Confirmation
 ```
 
-The actual state must reflect execution; the system MUST NOT claim completion when mandatory output or gates are missing.
+The Phase is complete only when its Process Agent has completed its contract, the mandatory Phase Output exists, and required gates have passed.
 
-## 14. Relationship to Process Agent MD
+## 14. Relationship to Agent Contract
 
-Every Process Agent MD MUST define the phase-specific implementation of this Contract.
+The Phase Contract is an orchestration application of the Agent Contract, not a competing contract.
 
-The Phase Contract supplies the common lifecycle; the Process Agent supplies domain-specific:
-
-- inputs;
-- outputs;
-- tasks;
-- capabilities it invokes;
-- execution decisions;
-- quality criteria;
-- phase-specific handoff content.
-
-No Process Agent may bypass the common Phase Contract.
+The Process Agent MD remains the authoritative source for phase-specific professional Input, Execution, Output and quality criteria. The Phase guarantees that these are invoked, preserved and handed forward consistently.
