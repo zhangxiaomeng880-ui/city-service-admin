@@ -1,67 +1,70 @@
-# City Service Admin — AI Native Product Lab V1.1
+# City Service Admin — AI Native Product Lab V1.2
 
-这是一个用于验证 **AI Native 产品研发流程** 的实验项目。
+这是一个用于验证 **AI Native 项目级研发操作系统** 的实验项目。重点不是一次性完成 Demo，而是建立可复用、可对话、可验证、可审计、可持续运行的项目机制。
 
-城市服务后台只是第一个业务样例，重点不是一次性完成一个 Demo，而是建立一套可以持续复用、可对话执行、可验证和可审计的研发机制。
+## AI Native Lifecycle
 
-## AI Native Workflow
+**Project → Product → Design → Planning → Coding → Testing → Compliance → Release / Deploy → Maintenance / Analytics → Audit → Iteration → Product**
 
-**Research → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics / Maintenance → Audit → Iteration**
+Conversation Orchestrator 横跨全部阶段，负责自然语言交互、上下文恢复、Agent 路由、用户确认、行动续接和周期任务调度。
 
-Iteration 是生命周期循环，不是 Agent。
+## Project First
 
-## Agent / Orchestration Boundary
+新项目必须先进入 Project 阶段。用户以自然语言描述项目目标，Project Agent 提示最小必要项目信息，同时自动检查 Git 仓库、当前/默认分支、远程最新状态、工作树、依赖、Runtime、环境配置、Build/Test/Preview、版本和 Figma 等基础设施。
 
-当前 Agent 体系保持稳定。Conversation Orchestrator 是交互/调度层，不新增业务 Agent。
+可安全自动修复的问题直接执行；需要权限、Secret、登录、生产操作或人工决策的事项明确提示用户。
 
-用户可以直接说：
+Project Gate 完成后必须询问用户是否进入 Product。
 
-- “继续执行。”
-- “按照之前确认的方案继续。”
-- “这个调整一下。”
-- “先不要发布。”
+## Stage Human Gate
 
-系统自动恢复上下文、识别当前 Agent、判断是否需要用户、执行下一步并在 Gate 处暂停或继续。
+每个阶段完成后，AI 向用户报告精简结果、Gate 和关键问题，并询问是否进入下一阶段。阶段内部可自动连续执行，但未经用户确认不得静默跨阶段。
 
-## Human-in-the-Loop
+## Independent Quality Gates
 
-用户负责目标、关键判断、优先级、必要确认和最终验收；Agent 负责分析、执行、验证和状态推进。
+- **Testing**：功能是否正确工作？
+- **Compliance**：是否符合规定、规则和约束？
+- **Audit**：流程、结论、证据和 Gate 是否真实、完整、可追溯？
 
-只有 Required Input、Human Gate、高风险操作、规则冲突或阻塞需要人工处理时才主动询问用户。
+三者独立，不自动继承彼此 PASS。
 
-## Minimum-Token Execution
+## Weekly Project Intelligence
 
-所有环节采用：
+每个 Project 独立配置 KPI、目标、口径、数据来源和竞品清单。
 
-**Context Reuse → Progressive Retrieval → Summary First → Incremental Context → No Redundant Confirmation → Compressed Output**
+### KPI Weekly
 
-原则不是单纯减少 Token，而是在保证准确性、证据、验证和 Gate 完整性的前提下减少无效上下文和重复交互。
+每周定时依据用户填写/确认的数据自动执行：
 
-## Quality Boundary
+**采集 → 来源明细 → 校验 → 汇总 → KPI Target 对比 → 趋势 → 周报**
 
-- **Testing AGENT**：验证功能是否正确工作。
-- **Compliance AGENT**：验证是否符合已确认规则、约束和适用要求。
-- **Audit AGENT**：独立验证流程、结论、证据和 Gate 是否真实、完整、可追溯。
+每个数据项保留来源、原始明细、口径、时间范围、填写/采集时间和 Evidence；缺失或口径冲突不得猜测。
 
-三者相互独立。Testing PASS 不等于 Compliance PASS；Compliance PASS 不等于 Audit PASS。
+### Competitor Weekly
 
-## Project Context
+每周定时依据项目竞品配置自动执行：
 
-项目基础信息和已确认上下文属于生命周期级资产，由 Project Agent 创建/刷新，后续阶段直接复用。
+**采集 → 来源记录 → 去重 → 本周变化 → 历史对比 → 项目影响 → 竞品周报**
 
-输入优先级：
+关键结论必须保留来源和时间信息，并区分事实与分析判断。
 
-**Project Context → Previous Stage Output → Knowledge Base → Current User Message**
+## Minimum Token
 
-继续阶段、阶段切换或 Handoff 时不重复要求用户提供已有项目背景。
+统一采用 Context Reuse、Summary First、Progressive Retrieval、Delta First、Evidence on Demand 和 Compressed Reporting。
 
-## V1.1 Core Documents
+Token 优化不得牺牲准确性、规则完整性、测试、合规、审计或证据。
 
-- `ai/knowledge-base/v1.1/AI_NATIVE_PROJECT_OS_V1.1.md`
-- `ai/rules/AI_RULES_V1.1.md`
-- `ai/rules/STAGE_CONTRACT_V1.2.md`
-- `ai/rules/CONVERSATION_ORCHESTRATION_V1.1.md`
-- `ai/agents/AGENT_INTERACTION_MATRIX_V1.1.md`
-- `ai/agents/compliance/AGENT.md`
+## Current V1.2 Documents
 
-V1.0 文档保留作为历史版本和演进依据；当前执行以 V1.1 规则为准。
+- `ai/knowledge-base/v1.2/AI_NATIVE_PROJECT_OS_V1.2.md`
+- `ai/knowledge-base/v1.2/PROJECT_WEEKLY_INTELLIGENCE_V1.2.md`
+- `ai/rules/AI_RULES_V1.2.md`
+- `ai/rules/STAGE_CONTRACT_V1.3.md`
+- `ai/rules/CONVERSATION_ORCHESTRATION_V1.2.md`
+- `ai/rules/SCHEDULED_INTELLIGENCE_V1.2.md`
+- `ai/agents/README.md`
+- `ai/agents/project/AGENT.md`
+- `ai/agents/analytics/AGENT.md`
+- `ai/agents/research/COMPETITOR_WEEKLY.md`
+
+V1.0/V1.1 文档保留作为历史演进依据；当前执行规则以 V1.2 系列为准。
