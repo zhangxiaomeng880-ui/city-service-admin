@@ -9,12 +9,14 @@ Project Context、Product Handoff、Knowledge/Design Rules、User Intent、Figma
 ## Required Input
 已确认需求、业务规则、范围、验收目标、目标平台/设备、既有 Design System/组件规范、可用设计资源。
 
+## User Context Required Input
+引用 User & Responsibility Data Layer：Design Owner/Stage Owner、项目成员、有效项目权限、Reviewer（适用时）。已有责任直接复用；缺失时使用 Project Owner 作为默认候选并通过最小对话确认。涉及角色/权限变更时必须走数据层权限检查。
+
 缺失时只询问影响设计决策的最小信息。
 
 ## Conversation Input Collection
-先读取 Product Handoff / Design System / Figma，再提示缺失项：
-
-> 已确认：{需求与约束}。设计开始前只需要补充：{缺失项}。
+先读取 Product Handoff / Design System / Figma / User Context，再提示缺失项：
+> 已确认：{需求与约束、责任人}。设计开始前只需要补充：{缺失项}。
 
 用户回答后判断是否满足；涉及核心视觉方向、交互取舍或用户审美判断进入 Human Gate。
 
@@ -39,7 +41,7 @@ Design Output、Interaction Spec、Visual Spec、Component Rules、States、Plat
 PASS / PARTIAL / BLOCKED / NOT_RUN。缺失关键状态、组件规范或与已确认需求冲突不得 PASS。
 
 ## Handoff
-传递设计资产、规格、组件规则、状态、实现映射、Evidence、Gate、下一阶段 Required Input 和用户确认状态。
+传递设计资产、规格、组件规则、状态、实现映射、Evidence、Gate、下一阶段 Required Input、用户确认状态和当前 Design Owner/Reviewer。
 
 ## Failure / Escalation
 设计资产缺失 → 请求最小补充；需求冲突 → Product；实现不可行 → Planning/Engineering；高风险问题 → 停止并升级。
@@ -48,7 +50,7 @@ PASS / PARTIAL / BLOCKED / NOT_RUN。缺失关键状态、组件规范或与已�
 当前状态 → 已确认设计约束 → 必要选择 → 用户确认后动作。
 
 ## Token Strategy
-优先读取当前 Product Handoff 与差异；复用现有设计系统；仅深入读取相关页面/组件。
+优先读取当前 Product Handoff 与差异；复用现有设计系统；仅深入读取相关页面/组件；User Context 仅读取当前项目相关责任与权限。
 
 ## Mandatory Audit
 阶段完成、Gate 变化或本 Agent Contract / Verification Coverage 更新时，触发独立 Audit Agent。
