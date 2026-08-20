@@ -2,13 +2,11 @@
 
 ## 1. Purpose
 
-`AGENT_MD_CONTRACT` defines how an Agent executes. This Contract defines what execution data, business outputs, evidence, decisions, and usage metrics must remain traceable after execution.
+`AGENT_MD_CONTRACT` defines how an Agent executes. This Contract defines what execution data, business outputs, evidence, decisions, and usage metrics remain traceable after execution.
 
-The core principle is:
+Core principle:
 
 > **Execution Records serve system traceability; Output Artifacts serve business consumption.**
-
-A business Task MUST NOT be represented only by runtime logs, and runtime evidence MUST NOT be lost merely because a human-readable document is produced.
 
 ## 2. Canonical Relationship
 
@@ -24,6 +22,8 @@ Conversation
 Step
  ├─ Tool Run
  ├─ MCP Run
+ ├─ User Skill Usage
+ ├─ Capability Task
  └─ Model Run
  ↓
 Execution Record
@@ -34,10 +34,10 @@ Output Artifact
  ↓
 Decision Record when applicable
  ↓
-Knowledge / Next Task / Handoff
+Phase Output / Handoff / Knowledge
 ```
 
-`task_id` is the primary execution correlation key. `step_id`, `run_id`, `artifact_id`, and `decision_id` provide downward and cross-layer traceability.
+`task_id` is the primary execution correlation key. `phase_id`, `step_id`, `run_id`, `artifact_id`, and `decision_id` provide traceability.
 
 ## 3. Execution Record
 
@@ -63,31 +63,50 @@ Minimum fields:
 - final_status
 - evidence references
 
-The record describes **how the result was produced**, not the complete business document itself.
-
 ## 4. Step and Run Records
 
-Every significant execution Step receives a `step_id`.
+Every significant Step receives a `step_id`.
 
-### Tool Run / MCP Run
+### Tool / MCP Run
 
 Record, where applicable:
 
 - run_id
 - task_id
 - step_id
-- tool_type
-- tool_name
-- tool_version
+- provider_type
+- tool / MCP name
+- version
 - input reference
 - output reference
+- authorization reference where applicable
 - status
 - latency
 - retry count
 - estimated / actual cost
 - error reference
 
-User-configured MCP is treated as a Tool Run and MUST be distinguishable from built-in or project tools.
+User-configured MCP is a Tool / MCP Run and MUST be distinguishable from built-in / project tools.
+
+### User Skill Usage
+
+Record, where applicable:
+
+- skill_id / name
+- skill_version
+- source / owner
+- task_id
+- step_id
+- usage purpose
+- relevant input / output references
+- status
+- quality result
+
+A User Skill's content should not be copied into the PRD or execution log merely because it was used.
+
+### Capability Agent Task
+
+Record the Capability Agent Task and its `artifact_id` / execution references. A Capability Agent is an independent reusable Task provider, not a Phase-specific implementation.
 
 ### Model Run
 
@@ -110,7 +129,7 @@ Record, where applicable:
 - escalation
 - quality result
 
-The detailed Dynamic Model Routing algorithm is intentionally outside this Contract.
+Dynamic Model Routing remains outside this Contract.
 
 ## 5. Output Artifact
 
@@ -132,25 +151,11 @@ Minimum fields:
 - intended consumer
 - validity / supersession information when applicable
 
-Examples:
-
-- PRD
-- Weekly Competitor Report
-- KPI Analysis Report
-- Data Quality Report
-- Design Specification
-- Technical Plan
-- Test Report
-
-Artifacts MUST be reusable by reference. Downstream Agents should consume `artifact_id` / path / version rather than copying the full artifact into context.
-
 ## 6. Requirement / PRD Output Rule
 
-When the business Task is a **requirement-definition Task**, the final business output MUST be a unified, versioned **PRD Artifact**.
+When the business Task is a requirement-definition Task, the final business output MUST be one unified, versioned PRD Artifact.
 
-Competitor Analysis, Data Analysis, User Input, and Product Decisions are supporting sources; they are not substitutes for the PRD.
-
-The relationship is:
+Competitor Analysis, Data Analysis, User Input, User Skill results, and Product Decisions are supporting sources; they do not replace the PRD.
 
 ```text
 Evidence
@@ -168,18 +173,27 @@ Requirement
 PRD Artifact
 ```
 
-The PRD MUST integrate only validated and decision-relevant information. It MUST NOT become a dump of execution logs or every model response.
+The PRD integrates validated, decision-relevant information and keeps source references for material conclusions. It MUST NOT become a dump of execution logs or raw model responses.
 
-The PRD MUST retain source references for material conclusions so that each important requirement or decision can be traced back to supporting artifacts / evidence.
+## 7. Phase Output Rule
 
-## 7. Decision Record
+Every Process Agent owning a Phase MUST produce a formal Phase Output.
 
-A material product or user decision MUST be represented by a Decision Record when it changes the requirement, scope, solution, priority, acceptance criteria, or other downstream behavior.
+Phase Output is distinct from the underlying execution logs and is the primary input boundary for the next Phase.
+
+Minimum traceability:
+
+`Phase Output → source Artifacts → Decision / Evidence → Task / Step / Run`
+
+## 8. Decision Record
+
+A material product or user decision MUST be represented by a Decision Record when it changes requirement, scope, solution, priority, acceptance criteria, or downstream behavior.
 
 Minimum fields:
 
 - decision_id
 - project_id
+- phase
 - task_id
 - decision
 - rationale
@@ -188,19 +202,11 @@ Minimum fields:
 - decision time
 - status
 
-A Decision Record may reference:
+A recommendation is not a decision until authorized confirmation or an explicit Project Rule accepts it.
 
-- User Input
-- Competitor Artifact
-- Data Artifact
-- Project Context
-- Other validated evidence
+## 9. Evidence Record
 
-A recommendation is not a decision until the authorized decision-maker confirms it or an explicit project rule authorizes automatic acceptance.
-
-## 8. Evidence Record
-
-Material claims MUST retain provenance.
+Material claims retain provenance.
 
 Evidence classes include:
 
@@ -208,23 +214,26 @@ Evidence classes include:
 - Project Context
 - Tool Result
 - MCP Result
+- User Skill Result / Usage
 - Data
 - Competitor Source
 - Previous Agent Output
 - Knowledge Base
 - Model Inference
 
-Fact, Finding, Hypothesis, Recommendation, and Decision MUST remain distinguishable.
+Fact, Finding, Hypothesis, Recommendation, and Decision remain distinguishable.
 
-## 9. Metrics and Usage Records
+## 10. Metrics and Usage
 
-Metrics are recorded separately from business content so they can be aggregated without polluting the PRD or other artifacts.
+Metrics remain separate from business content.
 
 ### Task Metrics
 
 - duration
 - tool calls
 - MCP calls
+- User Skill usages
+- capability tasks
 - model runs
 - input / output / total tokens
 - model cost
@@ -243,51 +252,47 @@ Task-level metrics may be aggregated by:
 - Phase
 - Agent
 - Task Type
-- Tool / MCP
+- Tool / MCP / Skill
+- Capability Agent
 - Model
 - Quality outcome
 - Reuse outcome
 
-Aggregations MUST retain links back to the underlying Task / Run records.
+Aggregations MUST retain links to underlying Task / Run records.
 
-## 10. Reuse and Supersession
+## 11. Reuse and Supersession
 
-Before creating a new expensive result, the system MUST check whether a valid Artifact can be reused.
+Before expensive execution, check whether a valid Artifact can be reused.
 
-A result is reusable when it is:
+A reusable result is relevant, current enough, complete enough, quality-approved, and compatible with the current Task.
 
-- relevant;
-- sufficiently current;
-- complete enough;
-- quality-approved;
-- compatible with the current Task.
+If reused, record `artifact_id` rather than duplicating content.
 
-If reused, the new Task MUST record the referenced `artifact_id` and should not duplicate the artifact content unnecessarily.
+When a newer Artifact supersedes an older one, retain the supersession relationship.
 
-When a newer Artifact supersedes an older one, the relationship MUST be recorded rather than silently deleting the old result.
-
-## 11. Human Decision and PRD Integration
+## 12. Requirement Integration Flow
 
 For a requirement Task:
 
-1. Product Agent receives human requirement input.
-2. Product Agent detects whether Competitor / Data capabilities materially help.
-3. Existing valid analysis artifacts are offered for association first.
-4. If new analysis is useful and no valid result exists, the user is offered the relevant capability choices.
+1. Product receives human requirement input.
+2. Product detects Competitor / Data / other relevant capabilities.
+3. Existing valid results are offered for reuse first.
+4. If new analysis is useful, user chooses optional capabilities where required.
 5. Selected capability Tasks execute independently.
 6. Their Outputs become source Artifacts.
-7. Product Agent combines validated findings and user decisions.
-8. Material decisions are persisted as Decision Records.
-9. Product Agent produces or updates one authoritative PRD Artifact for the requirement.
-10. PRD references supporting artifacts instead of embedding execution logs.
-11. Product Gate and Audit verify the result before handoff to Design.
+7. Product combines validated findings and user decisions.
+8. Material decisions become Decision Records.
+9. Product produces one authoritative PRD Artifact.
+10. Product assembles the Product Phase Output containing the PRD and downstream-required information.
+11. Product Quality + independent Audit verify the Phase Output.
+12. Approved Product Phase Output becomes the Design Phase's formal primary input.
 
-## 12. Auditability
+## 13. Auditability
 
 Audit must be able to navigate:
 
 ```text
-PRD section / decision
+Phase Output / PRD section / decision
  ↓
 Decision Record
  ↓
@@ -299,28 +304,29 @@ Task
  ↓
 Step
  ↓
-Tool / MCP / Model Run
+Tool / MCP / Skill / Capability / Model Run
 ```
 
-If a material PRD conclusion cannot be traced to an accepted decision or evidence source, the requirement output is not fully auditable.
+If a material Phase Output / PRD conclusion cannot be traced to accepted evidence or a decision where required, the output is not fully auditable.
 
-## 13. Lifecycle
+## 14. Lifecycle / Immutability
 
-Records follow the lifecycle of the originating Task but must remain immutable enough to support audit history.
+Execution evidence must not be silently rewritten.
 
-Updates create new versions or append traceable events; they must not silently rewrite historical execution evidence.
+Updates create new versions or traceable events.
 
-Business Artifacts may be revised through versioning. The latest accepted version is the active consumer-facing result.
+Business Artifacts are versioned. The latest accepted version is the active consumer-facing result.
 
-## 14. Storage Boundary
+## 15. Storage Boundary
 
 - Execution Records → runtime / audit data
-- Run Records → tool / MCP / model usage data
+- Run Records → tool / MCP / Skill / model usage data
 - Metrics → analytics / cost data
 - Evidence → evidence store / references
-- Output Artifacts → business document / artifact store
+- Output Artifacts → business artifact store
+- Phase Output / Handoff → lifecycle handoff store
 - Decision Records → decision log
 - Knowledge-worthy conclusions → Knowledge Base
 - Process lessons → Retrospective
 
-The same source may be referenced by multiple layers, but each layer keeps its own responsibility.
+Each layer keeps its own responsibility while retaining cross-references.
