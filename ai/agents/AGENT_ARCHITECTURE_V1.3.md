@@ -1,23 +1,23 @@
-# AI Native Agent Architecture V1.4
+# AI Native Agent Architecture V1.5
 
 ## 1. Purpose
 
 This document defines the unified Agent classification and runtime architecture.
 
-Agents are formally divided into two categories:
+Agents are formally divided into:
 
 1. Process Agents
 2. Capability Agents
 
-This separation prevents specialist capabilities from being incorrectly embedded into a single lifecycle phase and enables parallel tasks, reusable capabilities, phase handoff, dynamic model routing, cost accounting, business artifact generation, and independent audit.
+A Phase is owned by a Process Agent. A Phase does not create a second Agent layer; it invokes the owning Process Agent and the capabilities registered in the Common Capability Pool.
 
 ## 2. Agent Categories
 
 ### 2.1 Process Agents
 
-Process Agents are responsible for lifecycle-stage execution, decision-making, stage gates, Phase Output, and handoff.
+Process Agents own lifecycle-stage execution, decision-making, Phase Input, Phase Output, gates, and handoff.
 
-Current Process Agents:
+Current Process Agents include:
 
 - Project Agent
 - Research Agent
@@ -31,30 +31,46 @@ Current Process Agents:
 - Release / Deploy Agent
 - Maintenance Agent
 
-A Process Agent may call Capability Agents, but does not own their specialist capabilities.
+A Process Agent may call Capability Agents, Tools, MCPs, User Skills, and Models, but does not copy specialist implementations.
 
 ### 2.2 Capability Agents
 
 Capability Agents provide reusable specialist capabilities and can operate independently or be invoked by Process Agents.
 
-Current Capability Agents:
+Current specialist Capability Agents:
 
 - Competitor Analysis Agent
 - Data Analysis Agent
 
-Capability Agents are not subordinate to Product Agent or any other single Process Agent.
+Capability Agents are not subordinate to Product or another single Phase.
 
-## 3. Common Agent Runtime
+## 3. Common Capability Pool
 
-All Agents share:
+The Common Capability Pool contains:
+
+- deterministic Tools;
+- user-configured MCPs;
+- User Skills;
+- registered Capability Agents;
+- Models.
+
+User-configured MCPs and User Skills are shared capabilities, not private capabilities owned by one Agent.
+
+A User Skill is a reusable user-provided skill / instruction package. It must be applicable and compatible with System Rules, Project Rules, permissions, security boundaries, and the Agent Contract.
+
+No Agent may invoke all available capabilities by default. Selection is Task-specific and must follow the Capability Registry.
+
+## 4. Common Runtime
+
+All Agents / Phases share:
 
 - Project Context
 - Phase Manager
 - Task Manager
 - Conversation Manager
 - Context Manager
-- Capability Router
-- Tool / MCP Router
+- Capability Registry / Router
+- Tool / MCP / Skill Router
 - Model Router
 - Execution Engine
 - State Manager
@@ -71,20 +87,22 @@ All Agents share:
 
 These are common runtime capabilities, not additional business Agents.
 
-## 4. Phase Contract
+## 5. Phase Contract
 
 Every project Phase follows the same core contract as its owning Process Agent:
 
 ```text
 Phase Input
  ↓
+Process Agent Input
+ ↓
 Input Validation / Readiness
  ↓
-Task / Context Assembly
+Task Classification
  ↓
 Capability Detection
  ↓
-Tool / MCP / Capability / Model Selection
+Tool / MCP / Skill / Capability Agent / Model Selection
  ↓
 Execution
  ↓
@@ -99,11 +117,11 @@ Phase Handoff
 Next Phase Input
 ```
 
-The Phase MUST have explicit Input, Execution, Output, and Gates. A Phase is not complete merely because its Process Agent stopped executing.
+The Phase MUST have explicit Input, Execution, Output, and Gates. The Phase does not implement a second capability layer.
 
 The approved Phase Output is the formal primary input boundary for the next Phase.
 
-## 5. Execution Hierarchy
+## 6. Execution Hierarchy
 
 ```text
 Project
@@ -116,7 +134,7 @@ Conversation
   ↓
 Step
   ↓
-Tool Run / MCP Run / Model Run
+Tool Run / MCP Run / Skill Usage / Capability Task / Model Run
   ↓
 Execution Record
   ↓
@@ -135,172 +153,7 @@ Next Phase Input
 
 A Phase can contain multiple independent Tasks and Conversations that run in parallel.
 
-## 6. Task and Conversation Rules
-
-- One Phase does not equal one Conversation.
-- One Task owns its own execution context.
-- Independent Tasks use independent Conversations.
-- Tasks may run in parallel.
-- Tasks exchange information through Project Context, Knowledge Base, and structured Outputs / Artifacts.
-- A completed capability result can be associated with later Tasks without re-running the capability.
-
-## 7. Capability Router and Common Capability Pool
-
-Capability Router identifies which specialist capabilities may improve a Task.
-
-The execution strategy may use:
-
-- built-in / system tools;
-- project tools;
-- user-configured MCPs;
-- registered Capability Agents;
-- Models.
-
-User-configured MCPs belong to the Common Capability Pool and are not owned by a single Agent. Authorized Agents may discover and use a compatible MCP subject to its registered schema, permission, availability, cost, and audit requirements.
-
-Agents must not call every available MCP by default.
-
-For an interactive human requirement, the Agent should recommend relevant capabilities such as Competitor Analysis and Data Analysis, allow user choice, and prefer valid reusable results.
-
-## 8. Execution Strategy
-
-Before selecting a Model, the Agent determines whether the Task can be reliably completed through a Tool / MCP or a registered Capability Agent.
-
-```text
-Task
- ↓
-Task Classification
- ↓
-Capability Detection
- ↓
-Execution Strategy
- ├─ Tool / MCP
- ├─ Capability Agent
- └─ Model
-```
-
-These strategies may be composed. Deterministic work should use deterministic Tools / MCPs whenever possible.
-
-## 9. Model Router
-
-Model Router is a global common capability.
-
-Its objective is:
-
-> Select the lowest-cost model that satisfies the required quality and capability constraints.
-
-Selection considers:
-
-- Task complexity
-- Required capability
-- Quality threshold
-- Candidate model capability
-- Historical model performance
-- Input / output size
-- Expected cost
-- Latency requirements
-
-Minimum Token is not equivalent to optimal model selection. The optimization target is Quality-Constrained Minimum Cost.
-
-The detailed Dynamic Model Routing algorithm is maintained separately.
-
-## 10. Model Escalation
-
-```text
-Lowest-Cost Feasible Model
- ↓
-Quality Gate
- ├─ PASS → Complete
- └─ FAIL
-      ↓
-Model Escalation
-      ↓
-Higher-Capability Model
-      ↓
-Quality Gate
-```
-
-Every escalation records its reason.
-
-## 11. Model Run Accounting
-
-Every model execution records:
-
-- Project ID
-- Phase
-- Task ID
-- Step ID
-- Model
-- Model Version
-- Input Tokens
-- Output Tokens
-- Cached Tokens
-- Total Tokens
-- Cost
-- Execution Time
-- Retry Count
-- Model Escalation
-- Quality Gate Result
-- Final Result
-- Model Selection Decision
-
-This data is the evidence source for future model-routing optimization and independent Audit.
-
-## 12. Execution Records and Business Artifacts
-
-Execution Records and Output Artifacts have different responsibilities.
-
-### Execution Record
-
-Records how a Task was executed, including Steps, Tool / MCP / Model Runs, quality, state, and usage.
-
-### Output Artifact
-
-Stores the reusable business result intended for downstream consumption.
-
-Examples include PRD, Competitor Report, KPI Report, Design Specification, Technical Plan, and Test Report.
-
-For a requirement-definition Task, Product MUST produce one authoritative versioned PRD Artifact. Competitor Analysis, Data Analysis, user input, and Product Decisions remain supporting sources and are linked to the PRD through evidence / decision references.
-
-The PRD MUST NOT contain raw execution logs. Runtime and cost evidence remains in the Execution Record / Usage layer.
-
-## 13. Decision and Traceability Chain
-
-Material product decisions should be represented as Decision Records.
-
-```text
-PRD section
- ↓
-Decision Record
- ↓
-Supporting Artifact / Evidence
- ↓
-Source Task
- ↓
-Step / Tool / MCP / Model Run
-```
-
-This permits Audit to verify why a requirement exists and what evidence supported it.
-
-## 14. Phase Handoff and Next-Phase Start
-
-After a Phase passes its required Quality and independent Audit gates, the system creates a Phase Handoff referencing the approved Phase Output.
-
-The next Phase performs its own Readiness Check against that handoff. The system SHOULD proactively notify the user when the next Phase is ready and explain the expected inputs and relevant Tools / MCPs / capabilities. The next business Phase starts only after user confirmation unless an explicit project rule authorizes automatic progression.
-
-Example:
-
-```text
-Product Output / PRD
-        ↓
-Design Readiness
-        ↓
-User confirmation
-        ↓
-Design Input
-```
-
-## 15. Standard Phase Chain
+## 7. Phase Output Chain
 
 ```text
 Product Output → Design Input
@@ -311,56 +164,173 @@ Testing Output → Release Input
 Release Output → Maintenance Input
 ```
 
-Each handoff preserves Artifact version, provenance, decisions, constraints, and unresolved items.
+Supporting Artifacts can be referenced, but the approved Phase Output remains the primary downstream input.
 
-## 16. Tool First
+## 8. Capability Router
 
-Deterministic work should be performed by deterministic tools whenever possible.
+Capability Router identifies which registered capability can satisfy or improve a Task.
 
-For example, Data Analysis should use SQL, Python, analytics tools, or compatible MCPs for calculation / retrieval, and use LLMs for interpretation, diagnosis, and recommendation.
+Candidate types:
 
-## 17. Quality and Cost Feedback Loop
+- Tool
+- User MCP
+- User Skill
+- Capability Agent
+- Model
+
+The router checks capability match, authorization, availability, quality requirements, cost, latency, and applicable user decisions.
+
+## 9. Execution Strategy
+
+Before selecting a Model, determine whether the Task can be reliably completed through a deterministic Tool / MCP / Skill or a registered Capability Agent.
+
+```text
+Task
+ ↓
+Task Classification
+ ↓
+Capability Detection
+ ↓
+Capability Registry
+ ↓
+Tool / MCP / Skill / Capability Agent / Model
+```
+
+Strategies may be composed. Deterministic work should use deterministic Tools / MCPs whenever possible.
+
+## 10. Model Router
+
+Model Router is a global common capability.
+
+Objective:
+
+> Select the lowest-cost model that satisfies required quality and capability constraints.
+
+Selection considers:
+
+- Task complexity
+- Required capability
+- Quality threshold
+- Candidate capability
+- Historical performance
+- Input / output size
+- Expected cost
+- Latency
+
+Minimum Token is not equivalent to optimal model selection. The optimization target is Quality-Constrained Minimum Cost.
+
+The detailed Dynamic Model Routing algorithm is maintained separately.
+
+## 11. Model Escalation
+
+```text
+Lowest-Cost Feasible Model
+ ↓
+Quality Gate
+ ├─ PASS → Complete
+ └─ FAIL → Model Escalation → Quality Gate
+```
+
+Every escalation records its reason and usage.
+
+## 12. Execution Records and Business Artifacts
+
+Execution Records and Output Artifacts have different responsibilities.
+
+### Execution Record
+
+Records how a Task was executed, including Steps, Tool / MCP / Skill / Capability / Model Runs, state, quality, and usage.
+
+### Output Artifact
+
+Stores the reusable business result intended for downstream consumption.
+
+Examples: PRD, Competitor Report, KPI Report, Design Specification, Technical Plan, Test Report.
+
+For requirement definition, Product MUST produce one authoritative versioned PRD Artifact.
+
+## 13. Decision and Traceability
+
+Material product decisions are Decision Records.
+
+```text
+PRD / Phase Output
+ ↓
+Decision Record
+ ↓
+Supporting Artifact / Evidence
+ ↓
+Source Task
+ ↓
+Step / Tool / MCP / Skill / Capability / Model Run
+```
+
+Audit must be able to trace important outputs back to evidence and decisions.
+
+## 14. Phase Handoff and Next-Phase Start
+
+After required Quality and independent Audit gates pass, create a Phase Handoff referencing the approved Phase Output.
+
+The next Phase performs its own Readiness Check. If ready, the system should proactively notify the user with:
+
+- current Phase completion;
+- Phase Output;
+- next Phase required inputs;
+- relevant Tools / MCPs / User Skills / Capability Agents;
+- expected execution.
+
+The next business Phase starts after user confirmation unless an explicit Project Rule authorizes automatic progression.
+
+## 15. Task and Conversation Rules
+
+- One Phase does not equal one Conversation.
+- Independent Tasks use independent Conversations.
+- Parallel Tasks retain independent execution and usage records.
+- Tasks exchange results through structured Outputs / Artifacts, Project Context, and Knowledge Base.
+- Valid existing capability results should be reused.
+
+## 16. Quality and Cost Feedback Loop
 
 ```text
 Task
  ↓
 Execution Strategy
  ↓
-Model / Tool / MCP Execution
+Tool / MCP / Skill / Capability / Model Execution
  ↓
 Quality Gate
  ↓
 Execution + Token / Cost / Quality Recording
  ↓
-Model Performance Registry
+Model Performance / Capability Performance Registry
  ↓
 Future Optimization
 ```
 
-## 18. Audit Boundary
+## 17. Audit Boundary
 
-Audit Agent remains independent from Testing, Compliance, and the Agent being audited.
+Audit Agent remains independent from the Agent being audited.
 
 Audit may inspect:
 
-- phase input readiness;
-- phase output completeness;
-- phase gate results;
+- Phase Input readiness;
+- Process Agent compliance;
+- Phase Output completeness;
+- Tool / MCP / Skill / Capability / Model selection;
+- authorization;
 - execution evidence;
-- model selection rationale;
-- tool / MCP selection and authorization;
-- token and cost consumption;
-- retries and escalations;
-- output correctness and traceability;
+- Token / Cost;
+- retries / escalations;
 - PRD-to-decision-to-evidence linkage;
-- phase-to-phase handoff integrity;
-- unnecessary or duplicated model/tool calls.
+- Phase-to-Phase handoff integrity;
+- unnecessary duplicate execution.
 
-An Agent must not self-certify its own independent Audit result.
+An Agent must not self-certify independent Audit.
 
-## 19. Contract References
+## 18. Contract References
 
-- `ai/rules/AGENT_MD_CONTRACT_V1.0.md` — mandatory Agent execution contract
-- `ai/rules/PHASE_CONTRACT_V1.0.md` — mandatory Phase lifecycle, output, gate, and handoff contract
-- `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md` — execution records, artifacts, metrics, evidence, and decisions
-- `ai/rules/CONVERSATION_ORCHESTRATION.md` — natural-language interaction and parallel Conversation orchestration
+- `ai/rules/AGENT_MD_CONTRACT_V1.0.md`
+- `ai/rules/PHASE_CONTRACT_V1.0.md`
+- `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md`
+- `ai/rules/CAPABILITY_REGISTRY_V1.0.md`
+- `ai/rules/CONVERSATION_ORCHESTRATION.md`
