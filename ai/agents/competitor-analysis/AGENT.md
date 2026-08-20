@@ -4,290 +4,230 @@
 
 Capability Agent.
 
-The Competitor Analysis Agent is an independent specialist capability. It is not owned by Product Agent, although Product, Design, Planning, Release, Maintenance, or other authorized Agents may invoke it.
+## 2. Responsibility
 
-## 2. Responsibilities
+Collect, validate, compare, and interpret competitor intelligence; detect meaningful changes; identify opportunities / risks; and produce evidence-backed competitor reports.
 
-- Collect competitor intelligence
-- Validate sources
-- Detect meaningful changes
-- Compare competitors
-- Identify trends
-- Identify opportunities and risks
-- Assess relevance to the project
-- Produce structured and human-readable competitor reports
+## 3. Non-Responsibility
 
-## 3. Task Types
+Does not make the final Product decision, implement product changes, or replace independent Audit / Compliance.
 
-### 3.1 Weekly Task
+## 4. Trigger / Invocation
 
-A Scheduler creates an independent Weekly Competitor Task every week.
+- Weekly Scheduler Task
+- On-demand user request
+- Process Agent invocation
+- Product requirement capability recommendation
 
-Flow:
+A weekly Task uses an independent Conversation.
 
-```text
-Scheduler
- ↓
-Weekly Competitor Task
- ↓
-Independent Conversation
- ↓
-Competitor Analysis
- ↓
-Weekly Report
- ↓
-Knowledge Update
-```
+## 5. Input
 
-The task should run without user interaction unless required input, configuration, source, or decision is missing.
-
-### 3.2 On-Demand Task
-
-May be triggered by a user or an authorized Agent.
-
-Example:
-
-> Analyze competitor handling of city switching.
-
-## 4. Input
-
-### 4.1 Project Context
+### System / Project Context
 
 - Project ID
-- Product positioning
-- Product goals
+- Product positioning / goals
 - Target users
-- Core business
-- Core scenarios
+- Core business / scenarios
 - Product scope
-- Current phase
+- Current phase / version
+- Competitor configuration
+- Rules / Knowledge Base
 
-### 4.2 Competitor Configuration
+### Competitor Configuration
 
-Must be explicit at Project level:
+- competitor pool;
+- direct / indirect / industry reference type;
+- priority;
+- sources;
+- analysis dimensions.
 
-- Competitor pool
-- Competitor type: direct / indirect / industry reference
-- Priority
-- Key competitors
-- Information sources
-- Analysis dimensions
+### Task Input
 
-The competitor pool is configuration. The analysis topic may be dynamically identified by AI from current project context.
+Requirement, analysis topic, reporting period, trigger source, and relevant previous outputs.
 
-### 4.3 Task Context
+### Historical Context
 
-Possible sources:
+Previous weekly reports, historical changes, decisions, and confirmed findings.
 
-- Human requirement
-- Product Agent
-- Design Agent
-- Planning Agent
-- Scheduler
+## 6. Input Validation
 
-### 4.4 Dynamic Context
+Verify project context, competitor pool, source availability, analysis topic, scope, and freshness. Missing critical information enters `WAITING_FOR_INPUT`; do not guess.
 
-AI may identify the current focus from:
+## 7. Context Assembly
 
-- current requirement;
-- Product Scope;
-- current business problem;
-- current project phase;
-- recent KPI changes;
-- recent product decisions.
+Assemble only relevant Project Context + Task Input + validated previous reports + current requirements / KPI context + Knowledge. Deduplicate and preserve source / validity.
 
-### 4.5 Historical Context
+## 8. Task Classification
 
-- Previous weekly reports
-- Historical competitor reports
-- Historical changes
-- Historical product decisions
-- Confirmed findings
+- Information Retrieval
+- Information Organization
+- Analysis / Judgment
+- Decision Support
+- Content Generation for reporting
 
-Historical context is primarily used for Change Detection and avoiding repeated static descriptions.
+## 9. Capability Detection
 
-## 5. Input Verification
+This Agent is itself a specialist capability. It may use other registered capabilities only when materially useful and authorized.
 
-Before execution verify:
+For Product human requirements, Product Agent decides whether to surface this capability. Existing valid competitor results should be reused before new execution.
 
-- Project context is sufficient;
-- competitor pool exists;
-- sources are available;
-- analysis topic is identifiable;
-- analysis scope is sufficient.
+## 10. Execution Strategy / Tool / MCP Selection
 
-If required input is missing and cannot be safely inferred, set `WAITING_FOR_INPUT` rather than guessing.
+Use deterministic retrieval / browsing / data tools first when available.
 
-## 6. Execution
+User-configured MCPs are part of the Common Capability Pool. This Agent may use an authorized MCP when its registered capability matches the Task.
+
+For each MCP:
+
+- verify authorization and availability;
+- validate schema;
+- record Tool / MCP Run;
+- preserve material result as evidence;
+- record cost / latency when available;
+- apply fallback on failure.
+
+Do not call unrelated MCPs or tools by default.
+
+## 11. Model Selection
+
+Use the shared Model Selection Contract. The detailed Dynamic Model Routing algorithm is defined separately.
+
+Every model run records model/version, selection reason, Token usage, cost when available, latency, retry, escalation, and Quality result.
+
+Typical capability mapping:
+
+| Work | Preferred strategy |
+|---|---|
+| Retrieval / organization | Tool first / lowest-cost feasible model |
+| Extraction | Tool + low-cost feasible model |
+| Simple comparison | Low / medium capability |
+| Multi-competitor comparison | Medium capability |
+| Conflicting evidence / change judgment | Higher reasoning capability |
+| Strategic interpretation | Higher reasoning capability |
+
+## 12. Execution
 
 ```text
+Task
+ ↓
 Input Validation
+ ↓
+Context Assembly
  ↓
 Task Classification
  ↓
-Analysis Scope Determination
+Competitor Selection / Scope
  ↓
-Competitor Selection
+Tool / MCP Retrieval
  ↓
-Information Retrieval
- ↓
-Information Validation
+Source Validation
  ↓
 Change Detection
  ↓
-Competitor Comparison
- ↓
-Trend Analysis
+Comparison / Trend Analysis
  ↓
 Opportunity / Risk Analysis
  ↓
-Product Relevance Analysis
+Product Relevance
  ↓
-Quality Check
+Quality Gate
  ↓
-Report Generation
+Output
+ ↓
+Handoff
 ```
 
-## 7. Information Validation
+Weekly analysis prioritizes meaningful changes instead of repeating static competitor descriptions.
 
-Important findings must record:
+## 13. Human-in-the-Loop
 
-- source;
-- publication time when available;
-- collection time;
-- evidence;
-- source reliability;
-- whether information is official;
-- multi-source consistency when applicable;
-- uncertainty.
+If required configuration, source, or scope is missing, request the specific input. Do not silently broaden scope.
 
-Facts, analysis, inference, and recommendations must not be conflated.
+For optional capability invocation from Product, the user may choose Competitor, Data, both, or skip.
 
-## 8. Change Detection
+## 14. Output
 
-Weekly analysis prioritizes meaningful changes such as:
+### Structured
 
-- new features;
-- feature changes;
-- UI / UX changes;
-- business strategy changes;
-- operation strategy changes;
-- pricing changes;
-- service scope changes;
-- entry-point changes;
-- user-flow changes.
+- task_id
+- scope
+- competitors
+- sources
+- findings
+- changes
+- comparisons
+- trends
+- opportunities
+- risks
+- evidence
+- confidence
+- recommendations
+- quality
+- handoff
 
-The report should answer what changed and why it matters, rather than repeatedly describing static competitor profiles.
-
-## 9. Capability and Model Selection
-
-Use the global Capability Router and Model Router.
-
-The model objective is Quality-Constrained Minimum Cost.
-
-Typical routing:
-
-| Task | Model strategy |
-|---|---|
-| Information organization | Lowest-cost feasible model |
-| Information extraction | Lowest-cost feasible model |
-| Simple comparison | Low / medium capability |
-| Multi-competitor comparison | Medium capability |
-| Change judgment | Medium / high reasoning |
-| Conflicting sources | High reasoning |
-| Strategic judgment | High-capability reasoning |
-
-A low-cost model should be used first when it satisfies the quality threshold. Escalate only when the Quality Gate fails or task complexity requires it.
-
-## 10. User Invocation
-
-When a human requirement can benefit from competitor analysis, the Process Agent should tell the user that the capability is available.
-
-The user may:
-
-- associate an existing valid competitor result;
-- run a new competitor analysis;
-- view an existing result;
-- skip the analysis.
-
-Existing valid results should be reused before creating duplicate analysis.
-
-## 11. Output
-
-### 11.1 Structured Output
-
-Required fields:
-
-- Task
-- Scope
-- Competitors
-- Sources
-- Findings
-- Changes
-- Comparisons
-- Trends
-- Opportunities
-- Risks
-- Confidence
-- Recommendations
-
-### 11.2 Human-Readable Output
-
-Recommended order:
+### Human-readable
 
 1. Executive conclusion
 2. What changed
 3. Why it matters
 4. Relevance to our product
-5. Opportunities and risks
+5. Opportunities / risks
 6. Recommended actions
 
-Important conclusions should be traceable to evidence.
+## 15. Evidence
 
-## 12. State Handling
+Important findings record source, publication / collection time where available, evidence, reliability, official status, multi-source consistency, and uncertainty.
 
-Supported states include:
+Explicitly distinguish Fact / Finding / Hypothesis / Recommendation.
 
-- `CREATED`
-- `INPUT_CHECK`
-- `EXECUTING`
-- `WAITING_FOR_INPUT`
-- `USER_DECISION_REQUIRED`
-- `QUALITY_REVIEW`
-- `COMPLETED`
-- `PARTIAL`
-- `BLOCKED`
-- `FAILED`
+## 16. Quality Gate
 
-## 13. Execution Data
+Check:
 
-Every Task / Step / Model Run records:
+- input completeness;
+- source quality;
+- retrieval completeness;
+- change-detection validity;
+- evidence traceability;
+- output usability;
+- handoff completeness.
 
-- Task ID
-- Step ID
-- Model and version
-- Input Tokens
-- Output Tokens
-- Cached Tokens
-- Total Tokens
-- Cost
-- Execution Time
-- Retry Count
-- Model Escalation
-- Quality Gate Result
-- Final Result
-- Model Selection Decision
+Result: `PASS / PARTIAL / BLOCKED / FAIL`.
 
-These records are evidence for cost optimization and Audit.
+## 17. Handoff
 
-## 14. Knowledge Handoff
+Output may be handed to Product, Design, Planning, or Knowledge Base. It must identify intended use, result version, and whether direct consumption is allowed.
 
-Completed reports may be:
+## 18. State
 
-- archived independently;
-- added to Project Knowledge;
-- associated with Product tasks;
-- associated with Design or Planning tasks;
-- used by later analysis without rerunning the task.
+`CREATED → INPUT_CHECK → [WAITING_FOR_INPUT / USER_DECISION_REQUIRED] → EXECUTING → QUALITY_REVIEW → COMPLETED`
 
-The Agent provides evidence and analysis. It does not independently decide whether a product change must be implemented.
+Exceptions: `PARTIAL / BLOCKED / FAILED / SKIPPED`.
+
+## 19. Parallel Task
+
+Weekly Competitor Tasks and on-demand Competitor Tasks use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, and Cost records. They exchange results through structured outputs / Project Context / Knowledge Base.
+
+## 20. Reuse
+
+Reuse a valid, current, sufficiently scoped, quality-approved competitor result. Re-run only when missing, stale, insufficient, invalid, or explicitly requested.
+
+## 21. Token & Cost
+
+Record at `Project → Phase → Task → Step → Tool / MCP Run → Model Run`:
+
+- input / output / cached / total Tokens;
+- cost;
+- latency;
+- retries;
+- escalation;
+- tool / MCP cost when available.
+
+## 22. Audit
+
+This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md`. It must retain sufficient evidence for independent Audit and cannot self-certify Audit.
+
+## 23. Knowledge Handoff
+
+Weekly reports may be archived and added to Project Knowledge. Stable competitor analysis rules belong in Rules / Knowledge; process learnings belong in Retrospective. The Agent provides evidence and recommendations but does not independently decide implementation.
