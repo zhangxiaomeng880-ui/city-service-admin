@@ -11,6 +11,33 @@ AI 是项目中的协作执行者，覆盖 Research、Product、Design、Plannin
 
 Testing、Compliance、Audit 三者职责独立，不得互相替代，也不得因为其中一个 PASS 自动推导另外两个 PASS。
 
+## Conversation Orchestration
+
+用户不需要管理 Agent。用户使用自然语言表达目标、继续、修改或回答问题，由 Conversation Orchestration Layer 自动完成当前 Stage / Agent 路由、上下文解析、必要提问、执行、验证和下一步调度。
+
+统一闭环：
+
+**User Intent → Context Resolution → Agent / Stage Routing → Required Input Check → Action → Verification / Gate → Next Action → User**
+
+Agent 只有在真正需要用户决策、缺失 Required Input、存在高风险操作或存在无法可靠判断的业务歧义时主动提问；已有上下文足够时直接执行，不重复确认。
+
+## Token Efficiency
+
+每次执行采用“最小必要上下文 + 最大信息密度 + 关键证据不省略”的策略。
+
+上下文读取顺序：
+
+1. 当前任务所需 Project Context
+2. 当前阶段 Previous Stage Output
+3. 与当前任务直接相关的 Knowledge
+4. 必要的 User Input
+
+采用 Progressive Retrieval：先读状态/摘要和最小资产范围；仅在发现冲突、缺失或复杂判断时扩大读取范围。优先使用已验证摘要、索引和引用，原文仅在摘要不足以支撑准确判断时读取。
+
+Token 优化不得省略：用户明确决策、业务规则、安全/权限/数据约束、Gate 判定依据、实际执行证据、测试/合规结论及 Audit 所需追溯信息。准确性和质量优先于 Token 节省。
+
+正常输出采用“状态 → 结论 → 关键发现 → 下一步”；仅在需要详细解释、复核或审计时展开证据。
+
 ## 修改前
 
 - 先读取相关产品规则、架构和现有实现。
