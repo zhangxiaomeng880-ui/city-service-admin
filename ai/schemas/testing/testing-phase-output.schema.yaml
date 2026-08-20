@@ -1,0 +1,26 @@
+schema: TestingPhaseOutput
+version: 1.0
+required: [phase_output_id, project_id, phase, status]
+fields:
+  phase_output_id: string
+  project_id: string
+  requirement_id: string
+  phase: TESTING
+  project_version: string
+  test_case_set_id: string
+  test_case_audit_id: string
+  test_report_id: string
+  execution_ids: [string]
+  issue_ids: [string]
+  retest_execution_ids: [string]
+  regression_execution_ids: [string]
+  testing_gate: [PASS, PARTIAL, BLOCKED, FAIL]
+  compliance_result: [PASS, PARTIAL, BLOCKED, FAIL, NOT_APPLICABLE]
+  audit_result: [AUDIT_PASS, AUDIT_FAIL, AUDIT_BLOCKED]
+  unresolved_risks: [string]
+  unresolved_issues: [string]
+  release_required_inputs: [string]
+  evidence_refs: [string]
+  status: [COMPLETED, PARTIAL, BLOCKED, SKIPPED]
+  output_version: string
+  created_at: datetime
