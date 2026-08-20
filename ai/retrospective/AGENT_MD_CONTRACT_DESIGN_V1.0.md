@@ -1,4 +1,4 @@
-# AGENT MD Contract 设计过程沉淀 V1.0
+# AGENT MD Contract 设计过程沉淀 V1.1
 
 ## 1. 背景
 
@@ -6,7 +6,7 @@
 
 本次确定：专业能力可以不同，但 Agent 的执行机制必须统一。
 
-> Agent MD 描述“这个 Agent 做什么”；统一 AGENT MD Contract 描述“所有 Agent 必须怎么做”。
+> Agent MD 描述“这个 Agent 做什么”；统一 AGENT MD Contract 描述“所有 Agent 必须怎么做”；Execution Record Contract 描述“执行后留下什么可追踪数据和业务 Artifact”。
 
 ## 2. 为什么必须统一
 
@@ -18,7 +18,9 @@
 - Tool / MCP / Model 选择无法比较；
 - Token / Cost 无法统一统计；
 - Audit 无法形成统一标准；
-- Agent 越权和职责漂移。
+- Agent 越权和职责漂移；
+- 执行日志与业务交付混为一谈；
+- 竞品 / 数据 / 人工决策无法稳定汇聚到最终需求。
 
 ## 3. 两大 Agent 分类
 
@@ -54,7 +56,7 @@ Phase
 └─ Task C → Conversation C
 ```
 
-Task 独立拥有 Context、State、Execution Evidence、Token、Cost 和 Model Run，可并行执行，并通过结构化结果 / Project Context / Knowledge Base 汇聚。
+Task 独立拥有 Context、State、Execution Evidence、Token、Cost 和 Model Run，可并行执行，并通过结构化结果 / Project Context / Knowledge Base / Artifacts 汇聚。
 
 ## 5. 人工需求与能力调用
 
@@ -84,14 +86,14 @@ Existing Valid Result?
 
 ## 6. Common Capability Pool 与 MCP
 
-本轮进一步明确：工具不是只有系统内置工具。
+工具不是只有系统内置工具。
 
 Common Capability Pool 包含：
 
 - Built-in / System Tools
 - Project Tools
 - User-configured MCPs
-- Registered Capability Agents（作为专业能力类）
+- Registered Capability Agents（专业能力类）
 
 用户配置的 MCP 属于公共能力池，而不是某一个 Agent 的私有能力。
 
@@ -130,7 +132,55 @@ Model
 
 核心原则是：**能可靠由工具完成的确定性工作，不应该无意义地消耗 LLM Token。**
 
-## 8. 通用能力
+## 8. “记录”与“业务输出”分离
+
+本轮新增并正式确立：
+
+> **Execution Record 解决系统可追溯性；Output Artifact 解决业务消费。**
+
+因此：
+
+- Execution Record 记录 Task / Step / Tool / MCP / Model / Quality / Token / Cost / Retry / Escalation；
+- Output Artifact 保存版本化业务结果；
+- Decision Record 保存影响需求或下游行为的正式决策；
+- Evidence 保存重要结论来源。
+
+不能因为生成 PRD 就删除或覆盖运行证据，也不能把运行日志直接塞进 PRD。
+
+## 9. 需求型 Task 的最终业务输出
+
+需求型 Task 的主业务结果必须是**一个权威、版本化的 PRD Artifact**。
+
+来源关系统一为：
+
+```text
+Evidence
+ ↓
+Analysis
+ ↓
+Finding
+ ↓
+Recommendation
+ ↓
+Product / Human Decision
+ ↓
+Requirement
+ ↓
+PRD Artifact
+```
+
+其中：
+
+- 人工需求是输入来源；
+- Competitor Analysis 提供竞品 Supporting Artifact；
+- Data Analysis 提供数据 Supporting Artifact；
+- Product Agent 负责综合、决策编排和 PRD 形成；
+- Decision Record 记录正式取舍；
+- PRD 只保留与业务决策有关的有效内容，并引用来源。
+
+Competitor Agent / Data Agent 不负责最终 PRD。
+
+## 10. 通用能力
 
 ### Capability Router
 
@@ -156,59 +206,31 @@ Model
 
 独立依据 Contract 审计 Agent MD 和实际执行，不允许被审计 Agent 自我认证。
 
-## 9. 统一 Contract 最终结构
+## 11. 统一 Contract 最终结构
 
-所有 Agent MD 固定遵循：
+所有 Agent MD 固定遵循 23 项结构；执行数据同时遵循 `EXECUTION_RECORD_CONTRACT_V1.0.md`。
 
-1. Agent Type
-2. Responsibility
-3. Non-Responsibility
-4. Trigger
-5. Input
-6. Input Validation
-7. Context Assembly
-8. Task Classification
-9. Capability Detection
-10. Execution Strategy / Tool / MCP Selection
-11. Model Selection
-12. Execution
-13. Human-in-the-Loop
-14. Output
-15. Evidence
-16. Quality Gate
-17. Handoff
-18. State
-19. Parallel Task
-20. Reuse
-21. Token & Cost
-22. Audit
-23. Knowledge Handoff
-
-## 10. Audit 原则
+## 12. Audit 原则
 
 Audit Agent 按统一 Contract 逐项审计，不为每个 Agent 发明独立标准。
 
-必须检查：
+对于需求型 Task，必须额外检查：
 
-- Agent 分类与职责边界；
-- Input / Validation；
-- Context；
-- Capability Detection；
-- Tool / MCP / Capability / Model；
-- Execution；
-- Human-in-the-Loop；
-- Output / Evidence；
-- Quality Gate；
-- Handoff；
-- State；
-- Parallel Task；
-- Reuse；
-- Token / Cost；
-- Knowledge Handoff。
+```text
+PRD
+ ↓
+Decision Record
+ ↓
+Supporting Artifact
+ ↓
+Evidence
+ ↓
+Task / Step / Run
+```
 
 只有 `AUDIT_PASS` 才允许正式接受；缺失关键证据应为 `AUDIT_BLOCKED`，不能猜测 PASS。
 
-## 11. 动态模型路由边界
+## 13. 动态模型路由边界
 
 动态模型路由属于 Common Agent Runtime 通用能力，不属于 Competitor Analysis 或 Data Analysis 私有能力。
 
@@ -225,17 +247,19 @@ Audit Agent 按统一 Contract 逐项审计，不为每个 Agent 发明独立标
 - 历史表现反馈；
 - Quality-Constrained Minimum Cost 优化。
 
-## 12. 本轮最终沉淀
+## 14. 本轮最终沉淀
 
 1. Process / Capability 两大分类；
 2. Unified AGENT MD Contract；
-3. Product 多 Task / 多 Conversation；
-4. Capability Detection + 用户选择；
-5. Common Capability Pool；
-6. User-configured MCP 作为公共能力；
-7. Tool First；
-8. Model Selection 统一记录；
-9. Quality Gate；
-10. Token / Cost Ledger；
-11. 独立 Audit；
-12. Dynamic Model Routing 单独专项设计。
+3. Execution Record Contract；
+4. Product 多 Task / 多 Conversation；
+5. Capability Detection + 用户选择；
+6. Common Capability Pool；
+7. User-configured MCP 作为公共能力；
+8. Tool First；
+9. Model Selection 统一记录；
+10. Execution Record / Artifact / Decision / Evidence 分层；
+11. 需求型 Task 统一汇聚为 PRD；
+12. Token / Cost Ledger；
+13. 独立 Audit；
+14. Dynamic Model Routing 单独专项设计。
