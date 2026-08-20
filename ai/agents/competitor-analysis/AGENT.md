@@ -1,4 +1,4 @@
-# Competitor Analysis Agent
+# Competitor Analysis Agent V1.1
 
 ## 1. Agent Type
 
@@ -52,7 +52,7 @@ Previous weekly reports, historical changes, decisions, and confirmed findings.
 
 ## 6. Input Validation
 
-Verify project context, competitor pool, source availability, analysis topic, scope, and freshness. Missing critical information enters `WAITING_FOR_INPUT`; do not guess.
+Verify project context, competitor pool, source availability, analysis topic, scope, freshness, and source provenance. Missing critical information enters `WAITING_FOR_INPUT`; do not guess.
 
 ## 7. Context Assembly
 
@@ -133,7 +133,9 @@ Product Relevance
  ↓
 Quality Gate
  ↓
-Output
+Output Artifact
+ ↓
+Execution Record / Usage Record
  ↓
 Handoff
 ```
@@ -148,9 +150,11 @@ For optional capability invocation from Product, the user may choose Competitor,
 
 ## 14. Output
 
-### Structured
+### Structured Output
 
 - task_id
+- artifact_id
+- artifact_version
 - scope
 - competitors
 - sources
@@ -166,6 +170,12 @@ For optional capability invocation from Product, the user may choose Competitor,
 - quality
 - handoff
 
+### Output Artifact
+
+The standard business output is a versioned `Competitor Analysis Report` or `Weekly Competitor Report`.
+
+The Artifact must identify intended consumer, validity / supersession information, supporting evidence, and source Task. It is the reusable result that Product or another downstream Agent may associate without rerunning the analysis.
+
 ### Human-readable
 
 1. Executive conclusion
@@ -174,6 +184,8 @@ For optional capability invocation from Product, the user may choose Competitor,
 4. Relevance to our product
 5. Opportunities / risks
 6. Recommended actions
+
+Runtime logs, Model Trace, MCP calls, Token and Cost details remain in Execution / Usage Records rather than the report body.
 
 ## 15. Evidence
 
@@ -190,6 +202,7 @@ Check:
 - retrieval completeness;
 - change-detection validity;
 - evidence traceability;
+- Output Artifact completeness / version;
 - output usability;
 - handoff completeness.
 
@@ -197,7 +210,7 @@ Result: `PASS / PARTIAL / BLOCKED / FAIL`.
 
 ## 17. Handoff
 
-Output may be handed to Product, Design, Planning, or Knowledge Base. It must identify intended use, result version, and whether direct consumption is allowed.
+Output Artifact may be handed to Product, Design, Planning, or Knowledge Base. It must identify intended use, result version, direct-consumption status, and evidence references.
 
 ## 18. State
 
@@ -207,11 +220,11 @@ Exceptions: `PARTIAL / BLOCKED / FAILED / SKIPPED`.
 
 ## 19. Parallel Task
 
-Weekly Competitor Tasks and on-demand Competitor Tasks use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, and Cost records. They exchange results through structured outputs / Project Context / Knowledge Base.
+Weekly Competitor Tasks and on-demand Competitor Tasks use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, Cost, and Execution Records. They exchange results through structured outputs / Output Artifacts / Project Context / Knowledge Base.
 
 ## 20. Reuse
 
-Reuse a valid, current, sufficiently scoped, quality-approved competitor result. Re-run only when missing, stale, insufficient, invalid, or explicitly requested.
+Reuse a valid, current, sufficiently scoped, quality-approved competitor Output Artifact. Re-run only when missing, stale, insufficient, invalid, or explicitly requested. When reused, record the referenced `artifact_id` / version.
 
 ## 21. Token & Cost
 
@@ -224,9 +237,11 @@ Record at `Project → Phase → Task → Step → Tool / MCP Run → Model Run`
 - escalation;
 - tool / MCP cost when available.
 
+Execution and cost records are separate from the business report Artifact.
+
 ## 22. Audit
 
-This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md`. It must retain sufficient evidence for independent Audit and cannot self-certify Audit.
+This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md` and `EXECUTION_RECORD_CONTRACT_V1.0.md`. It must retain sufficient execution, artifact, evidence, and usage records for independent Audit and cannot self-certify Audit.
 
 ## 23. Knowledge Handoff
 
