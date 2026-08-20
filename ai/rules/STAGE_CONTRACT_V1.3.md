@@ -1,72 +1,56 @@
-# Stage Contract V1.3
+# Stage Contract V2.0
 
-## 1. Project First
+## 1. Common Stage Contract
 
-所有新项目必须先经过 Project AGENT。Project 阶段负责 Project Context 初始化和基础设施 Readiness，不替代后续业务阶段。
-
-## 2. Common Input
-
-Project Context → Previous Stage Output → Knowledge Base → User Message。
-
-仅在缺失 Required Input 时向用户提问。
-
-## 3. Common Execution
-
-每个阶段执行：
+所有阶段从项目启动即使用统一契约：
 
 1. Context Resolution
 2. Required Input Check
 3. Execution
 4. Verification
-5. Gate
-6. Output
-7. Evidence
-8. Handoff
-9. Human Gate
+5. Evidence
+6. Gate
+7. Standard Handoff
+8. Human Gate / Next Action
 
-## 4. Stage Completion Human Gate
+## 2. Common Input
 
-阶段完成后必须向用户展示精简结果，并询问是否进入下一阶段。未经用户确认不得静默跨阶段。
+Project Context → Previous Handoff → Knowledge/Rules → User Intent → External Evidence。
 
-## 5. Project Contract
+仅在缺失 Required Input 时向用户提问。
 
-Project AGENT 额外负责：
+## 3. Agent Boundary
 
-- 创建项目上下文
-- 收集最小必要项目信息
-- 检查仓库和分支最新状态
-- 检查工作树、依赖、运行时、环境配置
-- 检查 Build/Test/Preview
-- 检查版本和设计资源
-- 自动修复安全可自动修复项
-- 提示必须人工执行项
+每个 Agent 必须只负责其专业边界。Testing、Compliance、Audit 的职责和 Gate 不得互相替代。
 
-Project Gate：PASS / PARTIAL / BLOCKED。
+## 4. Gate
 
-## 6. Quality Contracts
+统一状态：PASS / PARTIAL / BLOCKED / NOT_RUN。责任 Agent 负责专业判断，Gate Engine 负责标准化状态和证据约束。
 
-Testing：功能正确性。
+## 5. Handoff
 
-Compliance：规则与约束符合性。
+每个阶段完成后必须产生 Standard Handoff，至少包含：Output、Decisions、Evidence、Verification、Gate、Blocker/Warning、Next Stage Required Input、User Confirmation State。
 
-Audit：流程、证据、结论和 Gate 的独立性与可追溯性。
+## 6. Project
 
-三者独立。
+Project 支持 New Project 和 Existing Project Resume。New Project 负责初始化；Existing Project 负责快速筛选、恢复状态、版本/Git/环境检查。
 
-## 7. Evidence Contract
+## 7. Iteration
 
-关键结论必须具备 Evidence Reference。定时 KPI/竞品任务同样适用。
+Iteration Router 根据本次变化动态选择最小必要阶段。不能为了缩短流程跳过必要质量、合规、安全或发布 Gate。
 
-## 8. Scheduled Intelligence Contract
+## 8. Environment
 
-KPI Weekly 和 Competitor Weekly 必须绑定 Project，保存配置、来源、执行时间、状态、结果和生成报告。
+Environment Matrix 独立记录各环境 Branch、Version、Commit、Status、Last Verified、Evidence。环境状态必须独立验证。
 
-数据缺失或来源异常必须显式标记，不得猜测。
+## 9. Failure
 
-## 9. Token Contract
+失败必须进入统一 Failure Recovery：分类 → 有界重试 → 验证 → Diagnose → Escalate。不得无限自动重试。
 
-采用 Context Reuse、Summary First、Progressive Retrieval、Delta First、Evidence on Demand、Compressed Output。不得牺牲准确性和质量换取 Token 节省。
+## 10. User Gate
 
-## 10. Handoff
+阶段完成后默认询问用户是否进入下一阶段。需要业务选择、批准、风险确认或人工操作时必须显式询问对应类型，不使用模糊的“继续”代替必要 Decision。
 
-Handoff 必须携带当前 Output、Gate、Evidence、Warnings/Blockers、Next Stage Required Input 和用户确认状态。
+## 11. Token
+
+优先复用 Project Context 和 Handoff；摘要优先、差异优先、证据按需读取、压缩输出。不得省略关键验证。
