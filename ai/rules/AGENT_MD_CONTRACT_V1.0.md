@@ -18,25 +18,26 @@ Every Agent MD must contain, at minimum:
 2. Responsibility
 3. Non-Responsibility
 4. Trigger
-5. Input
-6. Input Validation
-7. Context Assembly
-8. Task Classification
-9. Capability Detection
-10. Execution Strategy / Tool / MCP Selection
-11. Model Selection
-12. Execution
-13. Human-in-the-Loop
-14. Output
-15. Evidence
-16. Quality Gate
-17. Handoff
-18. State
-19. Parallel Task
-20. Reuse
-21. Token & Cost
-22. Audit
-23. Knowledge Handoff
+5. Owner Phase when Process Agent
+6. Input
+7. Input Validation
+8. Context Assembly
+9. Task Classification
+10. Capability Detection
+11. Execution Strategy / Tool / MCP Selection
+12. Model Selection
+13. Execution
+14. Human-in-the-Loop
+15. Output
+16. Evidence
+17. Quality Gate
+18. Handoff
+19. State
+20. Parallel Task
+21. Reuse
+22. Token & Cost
+23. Audit
+24. Knowledge Handoff
 
 A section may state `N/A` only when genuinely not applicable, with a reason. It must not be silently omitted.
 
@@ -359,6 +360,8 @@ Every completed Task must identify:
 - Whether downstream can consume directly
 - Whether human confirmation is required
 
+For a Process Agent, its approved Phase Output is also the formal input boundary for the next Phase under the Phase Contract.
+
 ## 18. State Contract
 
 Standard lifecycle:
@@ -484,13 +487,23 @@ After completion, classify knowledge:
 
 Do not place every execution result into permanent knowledge.
 
-## 24. Compliance Rule
+## 24. Phase Contract Integration
+
+Process Agents MUST comply with `ai/rules/PHASE_CONTRACT_V1.0.md` when they own a project Phase.
+
+The Phase and Process Agent share the same Input, Execution, Output, Quality Gate, Audit Gate, and Handoff principles.
+
+A Process Agent MUST produce a formal Phase Output. The approved Phase Output becomes the primary structured input to the next Phase.
+
+Phase completion MUST NOT be declared when required Phase Output or gates are missing.
+
+## 25. Compliance Rule
 
 When an existing Agent MD conflicts with this Contract, this Contract wins unless an explicitly versioned higher-level rule supersedes it.
 
 Any exception must be documented and audited.
 
-## 25. Versioning Rule
+## 26. Versioning Rule
 
 Changes to this Contract require synchronized review of:
 
@@ -500,5 +513,6 @@ Changes to this Contract require synchronized review of:
 4. Knowledge Base
 5. Retrospective
 6. Audit criteria
+7. Phase Contract when phase lifecycle is affected
 
-A Contract update is not complete until dependent Agent MDs have been checked for compliance.
+A Contract update is not complete until dependent Agent MDs and Phase definitions have been checked for compliance.
