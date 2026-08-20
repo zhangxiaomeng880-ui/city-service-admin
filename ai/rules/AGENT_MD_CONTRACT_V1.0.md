@@ -23,7 +23,7 @@ Every Agent MD must contain, at minimum:
 7. Context Assembly
 8. Task Classification
 9. Capability Detection
-10. Tool Selection
+10. Execution Strategy / Tool / MCP Selection
 11. Model Selection
 12. Execution
 13. Human-in-the-Loop
@@ -37,6 +37,8 @@ Every Agent MD must contain, at minimum:
 21. Token & Cost
 22. Audit
 23. Knowledge Handoff
+
+A section may state `N/A` only when genuinely not applicable, with a reason. It must not be silently omitted.
 
 ## 3. Agent Definition Contract
 
@@ -149,7 +151,7 @@ Every Task must be classified as one or more of:
 - Action / Execution
 - Verification / Audit
 
-Task classification informs tool choice, model choice, and Quality Gate.
+Task classification informs execution strategy, model choice, and Quality Gate.
 
 ## 8. Capability Detection Contract
 
@@ -157,7 +159,7 @@ Before execution, the Agent must determine whether specialist Capability Agents 
 
 For human-facing flows:
 
-1. If a valid reusable capability result exists, offer association/reuse.
+1. If a valid reusable capability result exists, offer association / reuse.
 2. If no valid result exists but a capability would materially help, explicitly tell the user which capability is available.
 3. The user may select one capability, multiple capabilities, existing results, or skip.
 4. Capability invocation is not mandatory unless a higher-level Project Rule explicitly makes it required.
@@ -165,22 +167,74 @@ For human-facing flows:
 
 Current specialist capabilities include Competitor Analysis and Data Analysis.
 
-## 9. Tool Selection Contract
+## 9. Execution Strategy Contract
 
-Prefer deterministic tools for deterministic work.
+Before selecting a model, determine whether the Task can be completed reliably by a deterministic Tool, a registered Capability Agent, or a Model.
 
-Default priority:
+Default strategy:
 
-`Deterministic Tool → Capability Agent → LLM`
+`Deterministic Tool → Capability Agent → Model`
 
-Examples:
+This is a decision priority, not an absolute prohibition on combining them. A Task may use multiple strategies when that is required for a correct result.
 
-- SQL / Python / Analytics Tool for deterministic data calculation;
-- Competitor Analysis Agent for competitor intelligence;
-- Data Analysis Agent for KPI analysis and diagnosis;
-- LLM for interpretation, reasoning, generation, and judgment where appropriate.
+### 9.1 Deterministic Tool
 
-## 10. Model Selection Contract
+Use tools first for deterministic work, including:
+
+- SQL / database query;
+- Python / calculation;
+- analytics / metric query;
+- repository / file retrieval or modification;
+- other registered deterministic tools.
+
+LLMs must not perform deterministic work merely because they can.
+
+### 9.2 Capability Agent
+
+Use a Capability Agent when the task requires its specialist capability and the capability is registered, authorized, and appropriate.
+
+### 9.3 Model
+
+Use a Model for interpretation, reasoning, generation, judgment, or other work that genuinely requires model capability.
+
+## 10. Common Capability Pool and User-Configured MCP
+
+User-configured MCPs are part of the project's **Common Capability Pool**.
+
+They are not private capabilities owned by a single Agent. Any authorized Agent may consider a registered MCP when its capability matches the Task.
+
+A registered MCP should define, where applicable:
+
+- MCP name;
+- capability description;
+- input schema;
+- output schema;
+- authorization / permission scope;
+- availability status;
+- owner / configuration source;
+- cost information when available;
+- timeout / failure behavior;
+- auditability.
+
+### MCP Selection Rules
+
+Agents MUST:
+
+1. verify MCP authorization and availability;
+2. verify capability-task compatibility;
+3. use only declared inputs / schemas;
+4. avoid calling unrelated MCPs;
+5. record the Tool / MCP Run;
+6. preserve material MCP results as evidence;
+7. record cost / latency when available;
+8. apply defined fallback / failure handling;
+9. request human approval for operations requiring approval.
+
+Agents MUST NOT call every available MCP by default.
+
+MCPs are part of Tool Selection and are evaluated before unnecessary model execution.
+
+## 11. Model Selection Contract
 
 Every model execution must be attributable to a selection decision.
 
@@ -202,17 +256,17 @@ Record:
 
 The exact Dynamic Model Routing algorithm is defined separately and must not be duplicated inside individual Agent MDs.
 
-## 11. Execution Contract
+## 12. Execution Contract
 
 Every Task must be decomposable into auditable Steps.
 
 Minimum execution chain:
 
-`Task → Input Validation → Context Assembly → Capability Detection → Tool / Model Selection → Execution → Quality Check → Output`
+`Task → Input Validation → Context Assembly → Task Classification → Capability Detection → Tool / MCP / Capability / Model Selection → Execution → Quality Check → Output → Handoff`
 
 The Agent must preserve execution evidence.
 
-## 12. Human-in-the-Loop Contract
+## 13. Human-in-the-Loop Contract
 
 User intervention uses standardized states:
 
@@ -223,11 +277,13 @@ User intervention uses standardized states:
 
 User prompts must state what decision or information is needed and the available options when options are known.
 
-## 13. Output Contract
+For human Product requirements, if Competitor Analysis and/or Data Analysis can materially improve the result, the user must be informed of the available options rather than the Agent silently invoking optional capabilities.
+
+## 14. Output Contract
 
 Every Agent produces two layers.
 
-### 13.1 Structured Output
+### 14.1 Structured Output
 
 Minimum fields:
 
@@ -243,7 +299,7 @@ Minimum fields:
 - confidence
 - handoff
 
-### 13.2 Human-Readable Output
+### 14.2 Human-Readable Output
 
 Default order:
 
@@ -251,7 +307,7 @@ Default order:
 
 Internal traces or raw JSON must not be presented as the primary user-facing result.
 
-## 14. Evidence Contract
+## 15. Evidence Contract
 
 Important conclusions must identify their evidence source.
 
@@ -260,6 +316,7 @@ Evidence types include:
 - User Input
 - Project Context
 - Tool Result
+- MCP Result
 - Data
 - Competitor Source
 - Previous Agent Output
@@ -275,7 +332,7 @@ Distinguish explicitly:
 
 Hypothesis must not be presented as fact.
 
-## 15. Quality Gate Contract
+## 16. Quality Gate Contract
 
 Every Agent defines Quality Gates for:
 
@@ -292,7 +349,7 @@ Standard results:
 - `BLOCKED`
 - `FAIL`
 
-## 16. Handoff Contract
+## 17. Handoff Contract
 
 Every completed Task must identify:
 
@@ -302,7 +359,7 @@ Every completed Task must identify:
 - Whether downstream can consume directly
 - Whether human confirmation is required
 
-## 17. State Contract
+## 18. State Contract
 
 Standard lifecycle:
 
@@ -312,7 +369,7 @@ Exceptional states:
 
 `PARTIAL / BLOCKED / FAILED / SKIPPED`
 
-## 18. Parallel Task Contract
+## 19. Parallel Task Contract
 
 One Phase may contain multiple independent Tasks and Conversations.
 
@@ -328,7 +385,7 @@ Tasks communicate through Project Context, Knowledge Base, and structured output
 
 A Phase must not be treated as one mandatory Conversation.
 
-## 19. Reuse Contract
+## 20. Reuse Contract
 
 Before starting a new expensive execution, check whether a valid result already exists.
 
@@ -341,21 +398,21 @@ Reuse when the result is:
 
 Re-execution is justified only when the result is missing, stale, insufficient, or quality-deficient.
 
-## 20. Token & Cost Contract
+## 21. Token & Cost Contract
 
 Cost must be traceable at:
 
-`Project → Phase → Task → Step → Model Run`
+`Project → Phase → Task → Step → Tool / MCP Run → Model Run`
 
-Task cost should account for:
+Task cost should account for applicable:
 
-`Tool Cost + Model Cost + Retry Cost + Escalation Cost`
+`Tool Cost + MCP Cost + Model Cost + Retry Cost + Escalation Cost`
 
 This evidence is required for future model-routing optimization and Audit.
 
-## 21. Audit Contract
+## 22. Audit Contract
 
-Every Agent MD must be auditable.
+Every Agent MD must be auditable against this Contract.
 
 Audit checks:
 
@@ -365,17 +422,25 @@ Audit checks:
 - Clear responsibility boundary
 - No unauthorized scope
 
-### Input
+### Input / Context
 
 - Required inputs defined
 - Existing context reused
 - Input validation present
+- Context assembled without unjustified contamination
+
+### Capability / Execution Strategy
+
+- Capability detection is present
+- Existing valid results are reused
+- Tool / Capability / Model choice is justified
+- User-configured MCP handling follows the Common Capability Pool rules
 
 ### Execution
 
 - Common execution chain followed
-- Correct Tool / Capability / Model use
-- Execution evidence retained
+- Tool / MCP / Capability / Model Runs are traceable
+- Human intervention is explicit where required
 
 ### Output
 
@@ -386,14 +451,16 @@ Audit checks:
 
 ### Cost
 
-- Model Run recorded
-- Token recorded
-- Cost recorded
+- Tool / MCP / Model Runs recorded where applicable
+- Token recorded for model runs
+- Cost recorded where available / required
 - Retry / escalation recorded
 
-### State
+### State / Parallelism / Reuse
 
 - State transitions comply with the standard contract
+- Independent Tasks remain isolated
+- Existing valid results are considered before duplicate execution
 
 ### Independence
 
@@ -402,28 +469,28 @@ Audit checks:
 
 Final Audit result:
 
-`AUDIT_PASS / AUDIT_PARTIAL / AUDIT_FAIL`
+`AUDIT_PASS / AUDIT_PARTIAL / AUDIT_FAIL / AUDIT_BLOCKED`
 
 Only `AUDIT_PASS` is eligible for formal acceptance.
 
-## 22. Knowledge Contract
+## 23. Knowledge Contract
 
 After completion, classify knowledge:
 
 - One-time result → archive only
 - Reusable long-term rule → Knowledge Base
-- Execution/process rule → AGENT / Rules
+- Execution / process rule → AGENT / Rules
 - Learning from failure or change → Retrospective
 
 Do not place every execution result into permanent knowledge.
 
-## 23. Compliance Rule
+## 24. Compliance Rule
 
 When an existing Agent MD conflicts with this Contract, this Contract wins unless an explicitly versioned higher-level rule supersedes it.
 
 Any exception must be documented and audited.
 
-## 24. Versioning Rule
+## 25. Versioning Rule
 
 Changes to this Contract require synchronized review of:
 
