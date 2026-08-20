@@ -9,7 +9,7 @@ Agents are formally divided into two categories:
 1. Process Agents
 2. Capability Agents
 
-This separation prevents specialist capabilities from being incorrectly embedded into a single lifecycle phase and enables parallel tasks, reusable capabilities, dynamic model routing, cost accounting, and independent audit.
+The execution mechanism is governed by `ai/rules/AGENT_MD_CONTRACT_V1.0.md`.
 
 ## 2. Agent Categories
 
@@ -42,7 +42,7 @@ Current Capability Agents:
 - Competitor Analysis Agent
 - Data Analysis Agent
 
-Capability Agents are not subordinate to Product Agent or any other single Process Agent.
+Capability Agents are not subordinate to Product Agent or another single Process Agent.
 
 ## 3. Common Agent Runtime
 
@@ -53,8 +53,9 @@ All Agents share:
 - Conversation Manager
 - Context Manager
 - Capability Router
-- Model Router
 - Tool Router
+- Common Capability Pool
+- Model Router
 - Execution Engine
 - State Manager
 - Quality Gate
@@ -65,7 +66,22 @@ All Agents share:
 
 These are common runtime capabilities, not additional business Agents.
 
-## 4. Execution Hierarchy
+## 4. Common Capability Pool
+
+The Common Capability Pool contains reusable authorized tools and integrations available to eligible Agents.
+
+It includes:
+
+- Built-in / system tools
+- Project tools
+- User-configured MCPs
+- Registered Capability Agents as a separate specialist capability class
+
+User-configured MCPs are not owned by one Agent. Their authorization, schema, availability, cost, and auditability must be registered before use.
+
+Agents must not call every available MCP by default. They must first verify capability-task compatibility and authorization.
+
+## 5. Execution Hierarchy
 
 ```text
 Project
@@ -78,66 +94,79 @@ Conversation
   ↓
 Step
   ↓
-Model Run / Tool Run
+Tool / MCP / Capability Run and/or Model Run
   ↓
 Quality Gate
   ↓
 Structured Output
   ↓
 Human Readable Output
+  ↓
+Handoff
 ```
 
 A Phase can contain multiple independent Tasks and Conversations that run in parallel.
 
-## 5. Task and Conversation Rules
+## 6. Task and Conversation Rules
 
 - One Phase does not equal one Conversation.
 - One Task owns its own execution context.
 - Independent Tasks use independent Conversations.
 - Tasks may run in parallel.
 - Tasks exchange information through Project Context, Knowledge Base, and structured outputs.
-- A completed capability result can be associated with later Tasks without re-running the capability.
+- A completed capability result can be associated with later Tasks without rerunning the capability when it remains valid.
 
-## 6. Capability Router
+## 7. Capability Router
 
 Capability Router identifies which specialist capabilities may improve a Task.
 
-For an interactive human requirement, the Agent should recommend relevant capabilities when they are useful, such as:
+For an interactive human requirement, the Agent should recommend relevant capabilities when useful:
 
 - Competitor Analysis
 - Data Analysis
+- other registered capabilities
 
-The user may choose to:
-
-- associate an existing result;
-- run a new capability Task;
-- use multiple capabilities;
-- skip the capability.
+The user may choose to associate an existing result, run one capability, combine multiple capabilities, or skip optional capabilities.
 
 Existing valid results should be preferred over duplicate execution.
 
-## 7. Model Router
+## 8. Execution Strategy
+
+The common execution strategy is:
+
+```text
+Task
+ ↓
+Task Classification
+ ↓
+Capability Detection
+ ↓
+Deterministic Tool / MCP?
+ ├─ Yes → Use Tool / MCP
+ └─ No
+      ↓
+Specialist Capability Agent?
+ ├─ Yes → Use Capability Agent
+ └─ No
+      ↓
+Model
+```
+
+This is a default priority, not an absolute prohibition on combining strategies. Correct execution may combine Tool + Capability + Model.
+
+## 9. Model Router
 
 Model Router is a global common capability.
 
 Its objective is:
 
-> Select the lowest-cost model that satisfies the required quality and capability constraints.
+> Select the lowest-cost model that satisfies required quality and capability constraints.
 
-Selection considers:
+The exact Dynamic Model Routing algorithm is intentionally maintained separately and is not duplicated in individual Agent MDs.
 
-- Task complexity
-- Required capability
-- Quality threshold
-- Candidate model capability
-- Historical model performance
-- Input / output size
-- Expected cost
-- Latency requirements
+Every model run records model/version, selection reason, Token usage, cost when available, latency, retry, escalation, Quality Gate result, and final result.
 
-Minimum Token is not equivalent to optimal model selection. The optimization target is Quality-Constrained Minimum Cost.
-
-## 8. Model Escalation
+## 10. Model Escalation
 
 ```text
 Lowest-Cost Feasible Model
@@ -153,44 +182,52 @@ Higher-Capability Model
 Quality Gate
 ```
 
-Every escalation records its reason.
+This is an architecture-level pattern only. Routing thresholds and algorithms remain a separate approved specification.
 
-## 9. Model Run Accounting
+## 11. Tool First
 
-Every model execution records:
+Deterministic work should be performed by deterministic tools whenever possible.
 
-- Project ID
-- Phase
-- Task ID
-- Step ID
+For example, Data Analysis should use SQL, Python, Analytics Tools, or authorized MCPs for deterministic retrieval / calculation, and use models primarily for interpretation, diagnosis, and recommendation.
+
+## 12. Model Run / Tool Run Accounting
+
+Every execution should be traceable to Project / Phase / Task / Step.
+
+Model Run records:
+
 - Model
 - Model Version
+- Selection Reason
 - Input Tokens
 - Output Tokens
 - Cached Tokens
 - Total Tokens
-- Cost
+- Cost when available
 - Execution Time
 - Retry Count
-- Model Escalation
+- Escalation
 - Quality Gate Result
 - Final Result
-- Model Selection Decision
 
-This data is the evidence source for future model-routing optimization and independent Audit.
+Tool / MCP Run records:
 
-## 10. Tool First
+- Tool / MCP identifier
+- Task / Step
+- Input / Output reference where appropriate
+- Execution time
+- Cost when available
+- Success / failure
+- Evidence reference
 
-Deterministic work should be performed by deterministic tools whenever possible.
-
-For example, Data Analysis should use SQL, Python, or analytics tools for calculation, and use LLMs for interpretation, diagnosis, and recommendation.
-
-## 11. Quality and Cost Feedback Loop
+## 13. Quality and Cost Feedback Loop
 
 ```text
 Task
  ↓
-Model Router
+Execution Strategy
+ ↓
+Tool / MCP / Capability / Model
  ↓
 Execution
  ↓
@@ -200,21 +237,25 @@ Token / Cost / Quality Recording
  ↓
 Model Performance Registry
  ↓
-Future Model Router Optimization
+Future Routing Optimization
 ```
 
-## 12. Audit Boundary
+## 14. Audit Boundary
 
 Audit Agent remains independent from Testing, Compliance, and the Agent being audited.
 
 Audit may inspect:
 
-- input completeness;
+- Contract compliance;
+- input / context completeness;
 - execution evidence;
-- model selection rationale;
-- token and cost consumption;
+- Tool / MCP / Capability / Model selection rationale;
+- Token and cost consumption;
 - retries and escalations;
 - output correctness and traceability;
-- unnecessary or duplicated model/tool calls.
+- unnecessary or duplicated execution;
+- handoff and knowledge evidence.
 
 An Agent must not self-certify its own independent Audit result.
+
+The formal Audit procedure is defined by `ai/agents/audit/AGENT.md`.
