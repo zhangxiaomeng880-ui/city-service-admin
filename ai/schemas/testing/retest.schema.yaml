@@ -1,0 +1,26 @@
+schema: RetestRecord
+version: 1.0
+required: [retest_id, issue_id, test_case_id, source_fix_ref, status]
+fields:
+  retest_id: string
+  issue_id: string
+  test_case_id: string
+  project_id: string
+  requirement_id: string
+  project_version: string
+  frontend_code_version: string
+  backend_code_version: string
+  source_fix_ref: string
+  preview_ref: string
+  execution_ref: string
+  status: [PASS, FAIL, BLOCKED]
+  expected_result: string
+  actual_result: string
+  evidence_refs: [string]
+  regression_required: boolean
+  regression_ref: string
+  capability_run_refs: [string]
+  started_at: datetime
+  ended_at: datetime
+  duration_ms: number
+  created_at: datetime
