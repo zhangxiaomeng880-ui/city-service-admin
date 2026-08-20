@@ -1,9 +1,10 @@
-# AI Agents V1.1
+# AI Agents V1.2
 
-本目录定义项目级 AI Agent。Agent 负责专业执行能力；Conversation Orchestrator 负责自然语言交互、路由、上下文恢复、用户确认和行动续接，不新增业务 Agent。
+本目录定义项目级 AI Agent。Agent 负责专业执行能力；Conversation Orchestrator 负责自然语言交互、路由、上下文恢复、用户确认、行动续接和周期任务调度，不新增业务 Agent。
 
 ## Core Agents
 
+- Project Agent：新项目初始化、Project Context、基础设施 Readiness
 - Product Agent：需求、业务目标、规则与验收标准
 - Design Agent：UX/UI、视觉、交互与组件规范
 - Planning Agent：技术方案、架构与任务拆解
@@ -12,9 +13,22 @@
 - Compliance Agent：规则、约束和适用要求检查
 - Release / Deploy Agent：构建、环境、版本与发布
 - Maintenance Agent：上线后的维护与迭代
+- Analytics Agent：项目 KPI、目标对比和数据报告
 - Audit Agent：独立审计流程、结论、证据和 Gate
 
-Research、Analytics、Project Context 等属于研究/分析/上下文能力，可由 Workflow / Agent 调用，不因本版本新增业务 Agent。
+Iteration 是生命周期循环，不是 Agent。Conversation Orchestrator 不是业务 Agent。
+
+## Project First
+
+新项目必须首先进入 Project Agent。Project Agent 在收集最小必要项目信息的同时，自动检查仓库、分支、最新状态、工作树、依赖、Runtime、环境配置、Build/Test/Preview、版本、Figma 等基础设施。
+
+可安全自动修复的直接修复；需要权限、Secret、登录、生产操作或人工决策的事项提示用户。
+
+Project Gate 完成后必须询问用户是否进入 Product。
+
+## Stage Human Gate
+
+每个阶段完成后，默认向用户展示精简结果并询问是否进入下一阶段。阶段内部可自动连续执行，但不得未经用户确认静默跨阶段。
 
 ## Independent Quality Boundary
 
@@ -28,57 +42,22 @@ Research、Analytics、Project Context 等属于研究/分析/上下文能力，
 
 ## Conversation Orchestration
 
-所有 Agent 都采用自然语言人机交互：
+所有 Agent 都采用：
 
-**User Intent → Context Resolution → Agent Routing → Required Input → Action → Verification / Gate → Next Action**
+**User Intent → Context Resolution → Agent Routing → Required Input → Action → Verification / Gate → Human Gate / Next Action**
 
 用户无需指定 Agent。能够自动执行时直接执行；只有缺少 Required Input、Human Gate、风险操作、规则冲突或阻塞时才主动提示用户。
 
-每个 Agent 的详细交互方式见：
+## Weekly Project Intelligence
 
-`ai/agents/AGENT_INTERACTION_MATRIX_V1.1.md`
+Analytics Agent 支持项目维度 KPI 周报；每周依据项目配置和用户填写/确认的数据自动汇总，并与 KPI Target 对比。每个数据项保留来源明细、口径、时间范围和 Evidence。
 
-## Shared Input Contract
-
-执行前统一读取：
-
-1. Project Context
-2. Previous Stage Output
-3. Knowledge Base
-4. Current User Message
-
-不得重复询问已有且仍有效的上下文。
-
-## Shared Output Contract
-
-阶段 Agent 必须提供：
-
-- Input
-- Input Verification
-- Execution
-- Output
-- Output Verification
-- Gate
-- Handoff
-- Status
-
-并遵循 Conversation Orchestration 的：
-
-- Minimal User Prompt
-- User Reply Interpretation
-- Human Gate
-- Auto-Continue
-- Blocked / Fail Prompt
-- Next Action
-- Token Optimization
-- Evidence / Audit Record
-
-## Minimum-Token Rule
-
-优先使用上下文复用、渐进式读取、摘要引用、增量上下文和输出压缩；不得通过省略关键证据、跳过验证或猜测用户意图节省 Token。
+项目竞品跟踪按项目独立配置，每周自动汇总公开竞品变化并生成竞品周报；关键结论保留来源和时间信息。
 
 详细规则：
 
-- `ai/rules/CONVERSATION_ORCHESTRATION_V1.1.md`
-- `ai/rules/STAGE_CONTRACT_V1.2.md`
-- `ai/rules/AI_RULES_V1.1.md`
+- `ai/rules/CONVERSATION_ORCHESTRATION_V1.2.md`
+- `ai/rules/STAGE_CONTRACT_V1.3.md`
+- `ai/rules/AI_RULES_V1.2.md`
+- `ai/rules/SCHEDULED_INTELLIGENCE_V1.2.md`
+- `ai/knowledge-base/v1.2/AI_NATIVE_PROJECT_OS_V1.2.md`
