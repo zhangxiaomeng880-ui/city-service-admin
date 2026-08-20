@@ -1,4 +1,4 @@
-# AI Native Agent Architecture V1.3
+# AI Native Agent Architecture V1.4
 
 ## 1. Purpose
 
@@ -9,13 +9,13 @@ Agents are formally divided into two categories:
 1. Process Agents
 2. Capability Agents
 
-This separation prevents specialist capabilities from being incorrectly embedded into a single lifecycle phase and enables parallel tasks, reusable capabilities, dynamic model routing, cost accounting, business artifact generation, and independent audit.
+This separation prevents specialist capabilities from being incorrectly embedded into a single lifecycle phase and enables parallel tasks, reusable capabilities, phase handoff, dynamic model routing, cost accounting, business artifact generation, and independent audit.
 
 ## 2. Agent Categories
 
 ### 2.1 Process Agents
 
-Process Agents are responsible for lifecycle-stage execution, decision-making, stage gates, and handoff.
+Process Agents are responsible for lifecycle-stage execution, decision-making, stage gates, Phase Output, and handoff.
 
 Current Process Agents:
 
@@ -49,15 +49,19 @@ Capability Agents are not subordinate to Product Agent or any other single Proce
 All Agents share:
 
 - Project Context
+- Phase Manager
 - Task Manager
 - Conversation Manager
 - Context Manager
 - Capability Router
-- Tool Router
+- Tool / MCP Router
 - Model Router
 - Execution Engine
 - State Manager
+- Phase Readiness Gate
 - Quality Gate
+- Audit Gate
+- Phase Handoff Manager
 - Execution Record Store
 - Output Artifact Store
 - Token & Cost Ledger
@@ -67,7 +71,39 @@ All Agents share:
 
 These are common runtime capabilities, not additional business Agents.
 
-## 4. Execution Hierarchy
+## 4. Phase Contract
+
+Every project Phase follows the same core contract as its owning Process Agent:
+
+```text
+Phase Input
+ ↓
+Input Validation / Readiness
+ ↓
+Task / Context Assembly
+ ↓
+Capability Detection
+ ↓
+Tool / MCP / Capability / Model Selection
+ ↓
+Execution
+ ↓
+Phase Output
+ ↓
+Quality Gate
+ ↓
+Independent Audit Gate
+ ↓
+Phase Handoff
+ ↓
+Next Phase Input
+```
+
+The Phase MUST have explicit Input, Execution, Output, and Gates. A Phase is not complete merely because its Process Agent stopped executing.
+
+The approved Phase Output is the formal primary input boundary for the next Phase.
+
+## 5. Execution Hierarchy
 
 ```text
 Project
@@ -90,12 +126,16 @@ Output Artifact
   ↓
 Decision Record when applicable
   ↓
-Knowledge / Handoff / Next Task
+Phase Output
+  ↓
+Phase Handoff
+  ↓
+Next Phase Input
 ```
 
 A Phase can contain multiple independent Tasks and Conversations that run in parallel.
 
-## 5. Task and Conversation Rules
+## 6. Task and Conversation Rules
 
 - One Phase does not equal one Conversation.
 - One Task owns its own execution context.
@@ -104,25 +144,9 @@ A Phase can contain multiple independent Tasks and Conversations that run in par
 - Tasks exchange information through Project Context, Knowledge Base, and structured Outputs / Artifacts.
 - A completed capability result can be associated with later Tasks without re-running the capability.
 
-## 6. Capability Router
+## 7. Capability Router and Common Capability Pool
 
 Capability Router identifies which specialist capabilities may improve a Task.
-
-For an interactive human requirement, the Agent should recommend relevant capabilities when they are useful, such as:
-
-- Competitor Analysis
-- Data Analysis
-
-The user may choose to:
-
-- associate an existing result;
-- run a new capability Task;
-- use multiple capabilities;
-- skip the capability.
-
-Existing valid results should be preferred over duplicate execution.
-
-## 7. Common Capability Pool
 
 The execution strategy may use:
 
@@ -135,6 +159,8 @@ The execution strategy may use:
 User-configured MCPs belong to the Common Capability Pool and are not owned by a single Agent. Authorized Agents may discover and use a compatible MCP subject to its registered schema, permission, availability, cost, and audit requirements.
 
 Agents must not call every available MCP by default.
+
+For an interactive human requirement, the Agent should recommend relevant capabilities such as Competitor Analysis and Data Analysis, allow user choice, and prefer valid reusable results.
 
 ## 8. Execution Strategy
 
@@ -256,13 +282,44 @@ Step / Tool / MCP / Model Run
 
 This permits Audit to verify why a requirement exists and what evidence supported it.
 
-## 14. Tool First
+## 14. Phase Handoff and Next-Phase Start
+
+After a Phase passes its required Quality and independent Audit gates, the system creates a Phase Handoff referencing the approved Phase Output.
+
+The next Phase performs its own Readiness Check against that handoff. The system SHOULD proactively notify the user when the next Phase is ready and explain the expected inputs and relevant Tools / MCPs / capabilities. The next business Phase starts only after user confirmation unless an explicit project rule authorizes automatic progression.
+
+Example:
+
+```text
+Product Output / PRD
+        ↓
+Design Readiness
+        ↓
+User confirmation
+        ↓
+Design Input
+```
+
+## 15. Standard Phase Chain
+
+```text
+Product Output → Design Input
+Design Output → Planning Input
+Planning Output → Coding Input
+Coding Output → Testing Input
+Testing Output → Release Input
+Release Output → Maintenance Input
+```
+
+Each handoff preserves Artifact version, provenance, decisions, constraints, and unresolved items.
+
+## 16. Tool First
 
 Deterministic work should be performed by deterministic tools whenever possible.
 
 For example, Data Analysis should use SQL, Python, analytics tools, or compatible MCPs for calculation / retrieval, and use LLMs for interpretation, diagnosis, and recommendation.
 
-## 15. Quality and Cost Feedback Loop
+## 17. Quality and Cost Feedback Loop
 
 ```text
 Task
@@ -280,13 +337,15 @@ Model Performance Registry
 Future Optimization
 ```
 
-## 16. Audit Boundary
+## 18. Audit Boundary
 
 Audit Agent remains independent from Testing, Compliance, and the Agent being audited.
 
 Audit may inspect:
 
-- input completeness;
+- phase input readiness;
+- phase output completeness;
+- phase gate results;
 - execution evidence;
 - model selection rationale;
 - tool / MCP selection and authorization;
@@ -294,12 +353,14 @@ Audit may inspect:
 - retries and escalations;
 - output correctness and traceability;
 - PRD-to-decision-to-evidence linkage;
+- phase-to-phase handoff integrity;
 - unnecessary or duplicated model/tool calls.
 
 An Agent must not self-certify its own independent Audit result.
 
-## 17. Contract References
+## 19. Contract References
 
 - `ai/rules/AGENT_MD_CONTRACT_V1.0.md` — mandatory Agent execution contract
+- `ai/rules/PHASE_CONTRACT_V1.0.md` — mandatory Phase lifecycle, output, gate, and handoff contract
 - `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md` — execution records, artifacts, metrics, evidence, and decisions
 - `ai/rules/CONVERSATION_ORCHESTRATION.md` — natural-language interaction and parallel Conversation orchestration
