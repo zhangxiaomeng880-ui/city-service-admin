@@ -1,4 +1,4 @@
-# City Service Admin — AI Native Product Lab V1.2
+# 科室挂号 — AI Native Product Lab V1.2
 
 这是一个用于验证 **AI Native 项目级研发操作系统** 的实验项目。重点不是一次性完成 Demo，而是建立可复用、可对话、可验证、可审计、可持续运行的项目机制。
 
