@@ -1,0 +1,75 @@
+schema: TestReport
+version: 1.0
+required: [report_id, project_id, project_version, status]
+fields:
+  report_id: string
+  project_id: string
+  requirement_id: string
+  project_version: string
+  test_scope: [string]
+  test_cases:
+    total: number
+    passed: number
+    failed: number
+    blocked: number
+    skipped: number
+  coverage:
+    requirement: number
+    acceptance_criteria: number
+    test_case: number
+  execution:
+    total: number
+    automated: number
+    manual: number
+    pass_rate: number
+  issues:
+    total: number
+    critical: number
+    high: number
+    medium: number
+    low: number
+    resolved: number
+    open: number
+    reopened: number
+    deferred: number
+    resolution_rate: number
+  retest:
+    total: number
+    passed: number
+    failed: number
+  regression:
+    total: number
+    passed: number
+    failed: number
+  dimensions:
+    visual: object
+    functional: object
+    api: object
+    performance: object
+    boundary: object
+    tracking: object
+    compatibility: object
+    compliance_runtime: object
+  workload:
+    task_count: number
+    execution_count: number
+    duration_ms: number
+    retry_count: number
+    human_intervention_count: number
+  consumption:
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    total_cost: number
+    tool_cost: number
+    mcp_cost: number
+    model_cost: number
+  risks: [string]
+  known_issues: [string]
+  release_recommendation: [RECOMMEND, CONDITIONAL_RECOMMEND, DO_NOT_RECOMMEND]
+  status: [PASS, CONDITIONAL_PASS, FAIL, BLOCKED]
+  evidence_refs: [string]
+  source_execution_ids: [string]
+  source_issue_ids: [string]
+  report_version: string
+  created_at: datetime
