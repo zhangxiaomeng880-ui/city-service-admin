@@ -4,182 +4,149 @@
 
 Capability Agent.
 
-The Data Analysis Agent is an independent specialist capability. It is not owned by Product Agent, although Product, Release, Maintenance, or other authorized Agents may invoke it.
+## 2. Responsibility
 
-## 2. Responsibilities
+Validate KPI definitions and data quality; calculate / analyze metrics; detect changes and anomalies; diagnose likely drivers; and produce evidence-backed optimization recommendations and KPI reports.
 
-- Validate data and KPI definitions
-- Retrieve and calculate metrics
-- Detect changes and anomalies
-- Diagnose likely drivers
-- Distinguish facts, findings, hypotheses, and recommendations
-- Produce optimization recommendations
-- Produce structured and human-readable KPI reports
+## 3. Non-Responsibility
 
-## 3. Task Types
+Does not invent core KPI definitions, make final Product decisions, implement changes, or replace independent Audit / Compliance.
 
-### 3.1 Weekly KPI Task
+## 4. Trigger / Invocation
 
-A Scheduler creates an independent Weekly KPI Task every week.
+- Weekly KPI Scheduler Task
+- On-demand user request
+- Product / Release / Maintenance invocation
+- Product requirement capability recommendation
 
-```text
-Scheduler
- ↓
-Weekly KPI Task
- ↓
-Independent Conversation
- ↓
-Wait for / obtain data
- ↓
-Data Quality Check
- ↓
-Data Analysis
- ↓
-Weekly KPI Report
- ↓
-Knowledge Update
-```
+Weekly KPI execution uses an independent Conversation.
 
-If required weekly data is not available, the task enters `WAITING_FOR_INPUT` rather than failing.
+## 5. Input
 
-### 3.2 On-Demand Task
-
-May be triggered by a user or authorized Agent.
-
-Example:
-
-> Analyze why this week's CTR decreased.
-
-## 4. Input
-
-### 4.1 Project Context
+### System / Project Context
 
 - Project ID
-- Product goals
-- Core business
-- Current phase
+- Product goals / business context
+- Current phase / version
 - Business rules
-- Product background
+- Rules / Knowledge Base
 
-### 4.2 KPI Definition
-
-Each KPI must have an explicit definition:
+### KPI Definition
 
 - KPI name
-- Definition
-- Formula
-- Data source
-- Reporting period
-- Target
-- Guardrail
-- Dimensions
-- Segmentation rules
+- definition
+- formula
+- data source
+- reporting period
+- target
+- guardrail
+- dimensions
+- segmentation rules
 
-The Agent must not invent a core KPI definition when the metric definition is missing or ambiguous.
-
-### 4.3 Data Sources
-
-Supported sources may include:
+### Data Sources
 
 - database;
 - analytics platform;
 - API;
-- uploaded data files;
+- uploaded data;
 - manual data;
-- historical datasets;
-- historical reports.
+- historical datasets / reports.
 
-The source must be recorded.
+### Historical Context
 
-### 4.4 Task Context
+Previous KPI values / reports, anomalies, optimization plans, post-change results, and KPI definition changes.
 
-Possible sources:
+## 6. Input Validation
 
-- user;
-- Product Agent;
-- Release Agent;
-- Maintenance Agent;
-- Scheduler.
+Check KPI definition, time range, completeness, missing / duplicate / abnormal data, sample size, source / version changes, definition consistency, and statistical limitations.
 
-### 4.5 Historical Context
+If required data is unavailable or unreliable, use `WAITING_FOR_INPUT` or `BLOCKED / DATA_QUALITY_BLOCKED`; never fabricate a conclusion.
 
-- previous KPI values;
-- historical KPI reports;
-- historical anomalies;
-- historical optimization plans;
-- post-optimization results;
-- KPI definition changes.
+## 7. Context Assembly
 
-Historical context supports trend analysis, anomaly detection, and optimization-effect verification.
+Assemble only relevant KPI definitions + data scope + Project Context + historical results + current Task. Deduplicate and preserve data source / version / validity.
 
-## 5. Data Quality Check
+## 8. Task Classification
 
-The Agent must check before analysis:
+- Information Retrieval
+- Information Organization
+- Analysis / Diagnosis
+- Decision Support
+- Content Generation for reporting
 
-- completeness;
-- time range;
-- missing values;
-- duplicate records;
-- abnormal values;
-- sample size;
-- KPI definition consistency;
-- data version;
-- source changes;
-- statistical-caliber limitations;
-- metric-definition changes.
+## 9. Capability Detection
 
-If data quality is insufficient for a reliable conclusion, return `DATA_QUALITY_BLOCKED` or `BLOCKED` and do not fabricate a conclusion.
+This Agent is a specialist capability. Other registered capabilities may be used only when materially useful and authorized.
 
-## 6. Tool First
+For Product human requirements, Product Agent should surface Data Analysis when materially useful. Existing valid KPI analysis should be reused before new execution.
 
-Deterministic calculations should be performed by deterministic tools whenever possible.
+## 10. Execution Strategy / Tool / MCP Selection
 
-Preferred tools include:
+**Tool First is mandatory for deterministic work.**
 
-- SQL
-- Python
-- Analytics tools
-- Data query tools
-- Statistical calculation tools
+Preferred tools:
 
-LLMs should primarily handle interpretation, diagnosis, contextual reasoning, and recommendations.
+- SQL / database query;
+- Python;
+- Analytics tools;
+- Data query tools;
+- statistical calculation tools.
+
+User-configured MCPs are part of the Common Capability Pool. An authorized MCP may be used when its registered capability matches the data Task.
+
+For MCP use:
+
+- verify authorization / availability;
+- validate input / output schema;
+- record Tool / MCP Run;
+- preserve material results as evidence;
+- record cost / latency when available;
+- apply fallback on failure.
+
+Do not call unrelated tools / MCPs by default.
+
+LLMs should primarily handle interpretation, diagnosis, reasoning, and recommendation rather than deterministic calculations.
+
+## 11. Model Selection
+
+Use the shared Model Selection Contract. Dynamic Model Routing remains a separate common-runtime design.
+
+Every model run records model/version, selection reason, Token usage, cost when available, latency, retry, escalation, and Quality result.
+
+Typical strategy:
+
+| Work | Preferred strategy |
+|---|---|
+| Data retrieval / calculation | Deterministic Tool / MCP first |
+| Basic interpretation | Low-cost feasible model |
+| Trend / anomaly analysis | Low / medium capability |
+| Multi-dimensional driver diagnosis | Higher reasoning capability |
+| Optimization recommendation | Higher reasoning capability |
+
+## 12. Execution
 
 ```text
-Data
+Task
  ↓
-SQL / Python / Analytics Tool
- ↓
-Metrics
- ↓
-LLM
- ↓
-Interpretation
- ↓
-Diagnosis
- ↓
-Recommendation
-```
-
-## 7. Execution
-
-```text
 Input Validation
+ ↓
+Context Assembly
+ ↓
+Task Classification
  ↓
 KPI Definition Validation
  ↓
 Data Quality Check
  ↓
-Data Retrieval
+Tool / MCP Data Retrieval
  ↓
-Metric Calculation
+Deterministic Calculation
  ↓
 Baseline / Period Comparison
  ↓
-Trend Analysis
+Trend / Anomaly Analysis
  ↓
-Anomaly Detection
- ↓
-Segmentation Analysis
+Segmentation
  ↓
 Driver Diagnosis
  ↓
@@ -187,70 +154,40 @@ Business Interpretation
  ↓
 Optimization Recommendation
  ↓
-Evidence / Confidence Check
- ↓
 Quality Gate
  ↓
-Report Generation
+Output
+ ↓
+Handoff
 ```
 
-## 8. Capability and Model Selection
+## 13. Human-in-the-Loop
 
-Use the global Capability Router and Model Router.
+Request exact missing KPI definitions, data scope, source, or decision input when required. Do not infer a critical metric definition.
 
-The model objective is Quality-Constrained Minimum Cost.
+For optional Product capability invocation, the user may choose Data Analysis, Competitor Analysis, both, or skip.
 
-Typical routing:
+## 14. Output
 
-| Task | Model strategy |
-|---|---|
-| Metric calculation | Tool First |
-| Data cleaning / aggregation | Tool First |
-| Simple statistics | Tool + low-cost model |
-| Basic trend analysis | Low / medium capability |
-| Anomaly analysis | Medium capability |
-| Multi-dimensional driver diagnosis | High reasoning |
-| Product optimization recommendation | High reasoning |
-| Complex business judgment | High-capability reasoning |
+### Structured
 
-The Agent should not spend LLM tokens on deterministic calculations that tools can perform reliably.
-
-## 9. User Invocation
-
-When a human requirement can benefit from data analysis, the Process Agent should tell the user that the capability is available.
-
-The user may:
-
-- associate an existing valid KPI analysis;
-- upload/select data and run a new analysis;
-- view an existing result;
-- skip the analysis.
-
-Existing valid results should be reused before creating duplicate analysis.
-
-## 10. Output
-
-### 10.1 Structured Output
-
-Required fields:
-
-- Task
-- DataScope
-- DataQuality
+- task_id
+- data_scope
+- data_quality
 - KPI
-- Metrics
-- Comparisons
-- Trends
-- Anomalies
-- Drivers
-- Evidence
-- Confidence
-- Recommendations
-- FollowUpMetrics
+- metrics
+- comparisons
+- trends
+- anomalies
+- drivers
+- evidence
+- confidence
+- recommendations
+- follow_up_metrics
+- quality
+- handoff
 
-### 10.2 Human-Readable Output
-
-Recommended order:
+### Human-readable
 
 1. Executive conclusion
 2. KPI performance
@@ -261,78 +198,66 @@ Recommended order:
 7. Optimization recommendations
 8. Follow-up metrics
 
-Each important conclusion should distinguish:
+Distinguish Data Fact / Statistical Finding / Diagnosis / Hypothesis / Recommendation.
 
-- Data Fact
-- Statistical Finding
-- Diagnosis
-- Hypothesis
-- Recommendation
+## 15. Evidence
+
+Record data source, data version / batch when applicable, KPI definition version, query / calculation evidence, sample limitations, and relevant historical comparison.
 
 Correlation must not be presented as causation without sufficient evidence.
 
-## 11. State Handling
+## 16. Quality Gate
 
-Supported states include:
+Check:
 
-- `CREATED`
-- `INPUT_CHECK`
-- `WAITING_FOR_INPUT`
-- `DATA_QUALITY_BLOCKED`
-- `EXECUTING`
-- `USER_DECISION_REQUIRED`
-- `QUALITY_REVIEW`
-- `COMPLETED`
-- `PARTIAL`
-- `BLOCKED`
-- `FAILED`
+- KPI definition correctness;
+- data quality;
+- calculation correctness;
+- evidence traceability;
+- interpretation validity;
+- recommendation relevance;
+- output usability;
+- handoff completeness.
 
-## 12. Execution Data
+Result: `PASS / PARTIAL / BLOCKED / FAIL`.
 
-Every Task / Step / Model Run records:
+## 17. Handoff
 
-- Task ID
-- Step ID
-- Data Source
-- KPI Definition Version
-- Model and version
-- Input Tokens
-- Output Tokens
-- Cached Tokens
-- Total Tokens
-- Cost
-- Execution Time
-- Retry Count
-- Model Escalation
-- Data Quality Result
-- Quality Gate Result
-- Final Result
-- Model Selection Decision
+Results may be handed to Product, Release, Maintenance, or Knowledge Base. Identify intended use, result version, direct-consumption status, and required human decision.
 
-These records are evidence for cost optimization and Audit.
+## 18. State
 
-## 13. Cost Optimization
+`CREATED → INPUT_CHECK → [WAITING_FOR_INPUT / USER_DECISION_REQUIRED] → EXECUTING → QUALITY_REVIEW → COMPLETED`
 
-The Agent should minimize model cost through:
+Additional data-quality state: `DATA_QUALITY_BLOCKED`.
 
-1. Tool First
-2. Precomputed metrics
-3. Historical result reuse
-4. Cached calculations
-5. Avoiding duplicate queries
-6. Reusing valid analysis results
-7. Low-cost models for low-complexity interpretation
-8. Reasoning-model escalation only when required
+Exceptions: `PARTIAL / BLOCKED / FAILED / SKIPPED`.
 
-## 14. Knowledge Handoff
+## 19. Parallel Task
 
-Completed analysis may be:
+Weekly KPI Tasks and on-demand analyses use independent Task IDs, Conversations, state, Tool / MCP Runs, Model Runs, Token, and Cost records. Results are shared through structured outputs / Project Context / Knowledge Base.
 
-- archived independently;
-- added to Project Knowledge;
-- associated with Product tasks;
-- associated with Release or Maintenance tasks;
-- reused for later trend analysis;
-- used to verify historical optimization outcomes.
+## 20. Reuse
 
-The Agent provides analysis and recommendations. It does not independently decide whether a product change must be implemented.
+Reuse valid, current, sufficiently scoped, quality-approved KPI analyses and precomputed metrics. Re-run only when missing, stale, insufficient, invalid, or explicitly requested.
+
+## 21. Token & Cost
+
+Record at `Project → Phase → Task → Step → Tool / MCP Run → Model Run`:
+
+- input / output / cached / total Tokens;
+- cost;
+- latency;
+- retries;
+- escalation;
+- tool / MCP cost when available.
+
+Cost optimization uses Tool First, precomputed metrics, cache / reuse, duplicate-query avoidance, and escalation only when quality requires it.
+
+## 22. Audit
+
+This Agent is audited against `AGENT_MD_CONTRACT_V1.0.md`. It must retain sufficient evidence for independent Audit and cannot self-certify Audit.
+
+## 23. Knowledge Handoff
+
+Weekly KPI reports may be archived and added to Project Knowledge. Stable metric rules belong in Rules / Knowledge; process learnings belong in Retrospective. The Agent provides analysis and recommendations but does not independently decide implementation.
