@@ -1,71 +1,88 @@
-# AI 工作规则 V1.2
+# AI 工作规则 V2.0
 
-## 1. Agent 与编排层
+## 1. 核心架构
 
-AI 通过既有 Agent 协作执行：Project、Product、Design、Planning、Engineering/Coding、Testing/QA、Compliance、Release/Deploy、Maintenance、Analytics、Audit 等。
+AI Native 项目由 **Project Context + Conversation Orchestrator + Stage/Agent + Standard Handoff + Verification + Gate Engine + Evidence + Human Gate + Iteration Router** 组成。
 
-**Conversation Orchestrator 不是新的业务 Agent。**它负责自然语言交互、上下文恢复、Agent 路由、用户确认、行动续接、定时任务调度和状态管理。
+Conversation Orchestrator 不是业务 Agent；它负责交互、上下文、路由、状态恢复、用户确认和周期调度。
 
-## 2. Project 作为生命周期入口
+## 2. Project Context
 
-创建新项目时首先进入 Project AGENT。Project AGENT 负责收集最小必要项目资料并检查基础设施、Git 最新状态、依赖、运行环境、配置、Build/Test/Preview、版本及设计资源。
+Project Context 是跨 Agent 的唯一项目事实入口。项目级事实、规则、版本、环境、KPI、竞品、Decision、Blocker、Gate 和历史状态必须通过 Project Context 管理。
 
-可安全自动处理的问题直接处理；需要授权、Secret、登录、生产操作或人工决策的事项必须提示用户。
+聊天历史不能作为唯一事实源。
 
-## 3. 人机协作
+## 3. Agent Contract
 
-用户负责目标、关键判断、优先级、必要确认和最终验收；Agent 负责信息整理、分析、方案、执行、验证和状态推进。
+所有 Agent 必须遵循 `AGENT_CONTRACT_V2.0.md`。至少定义 Role、Input、Required Input、Execution、Verification、Output、Evidence、Gate、Handoff、Failure、User Prompt、Token Strategy。
 
-用户不需要管理 Agent，也不需要固定命令。
+## 4. Project Lifecycle
 
-## 4. 阶段交互
+Project 支持：
 
-用户自然语言输入后，AI 依次判断：当前事项 → 当前 Stage → 当前 Gate → Required Input → 是否需要用户 → Next Action。
+- New Project：初始化新项目
+- Existing Project / Resume：恢复已有项目
 
-能够自动完成就执行；需要用户就只问最小必要问题。
+已有项目不得重复初始化。Resume 后由 Iteration Router 根据本次任务选择最小必要阶段。
 
-每个阶段完成后，默认必须向用户报告结果并询问是否进入下一阶段；用户确认后才跨阶段继续。
+## 5. Handoff
 
-## 5. Minimum Token
+Agent 之间统一使用 Standard Handoff，不依赖长文本交接。Handoff 必须包含 Output、Decisions、Evidence、Gate、Blocker/Warning、Next Stage Required Input、User Confirmation State。
 
-统一使用：
+## 6. Gate
 
-**Project Context 复用 + 摘要优先 + 渐进读取 + 增量读取 + 差异优先 + 按需原文 + 压缩输出。**
+统一使用 Gate Engine：PASS / PARTIAL / BLOCKED / NOT_RUN。
 
-不得为了节省 Token 跳过关键业务规则、证据、测试、Compliance、Audit、基础设施检查或用户确认。
-
-质量优先级：
-
-**准确性/安全性 > 规则完整性 > 验证完整性 > 用户体验 > Token 优化。**
-
-## 6. Evidence
-
-关键执行、用户确认、自动修复、定时任务和 Gate 必须记录可追溯 Evidence：来源、时间、版本/批次（适用时）、判断、结果和关联项目。
-
-## 7. Weekly KPI
-
-项目配置 KPI、目标、口径、来源和周期后，每周自动汇总。数据必须来源明细化，并与目标比较。缺失、冲突或来源不足的数据不得猜测。
-
-## 8. Weekly Competitor
-
-项目独立配置竞品清单、关注维度和来源。每周自动采集、去重、比较本周变化并生成竞品周报；关键结论必须有来源和时间信息。
-
-## 9. Scheduled Jobs
-
-定时任务必须绑定 Project 和配置，记录执行时间、数据来源、状态、生成资产和异常。失败时提示用户，不得伪造结果。
-
-## 10. Gate Independence
-
-Testing、Compliance、Audit 独立。
+Testing、Compliance、Audit 独立：
 
 - Testing PASS ≠ Compliance PASS
 - Compliance PASS ≠ Audit PASS
-- 一个 Gate PASS 不得自动推导另一个 Gate PASS
+- Audit PASS ≠ Release Approval
 
-## 11. Resume
+未验证不得 PASS；证据不足不得伪造 PASS。
 
-用户说“继续”时恢复当前 Task、Stage、Agent、Gate、确认决策、Blocker 和 Next Action，不重新索取已有上下文。
+## 7. Iteration Router
 
-## 12. Project Context Update
+Router 根据 User Intent、Project Context、Change Scope、Risk、Existing Gates 和 Environment 状态选择阶段。
 
-用户在对话中提出新的项目级事实、规则、仓库/分支、版本、KPI、竞品或其他长期约束时，应识别并更新 Project Context，并记录变更证据。
+为了缩短流程不得跳过必要质量、安全或合规 Gate。
+
+## 8. Environment
+
+统一使用 Environment Matrix 管理环境、分支、版本、Commit、验证状态和 Evidence。Local/Preview/Test/Production 必须独立验证。
+
+## 9. Failure Recovery
+
+失败必须分类并执行 bounded Retry → Diagnose → Escalate。安全可重复操作可以有限重试；授权、Secret、生产操作、业务决策、数据风险等必须暂停并提示用户。
+
+## 10. Conversation
+
+用户无需指定 Agent。Orchestrator 判断当前 Task、Stage、Required Input、Risk、Next Action。
+
+用户提示类型必须区分：Inform、Confirm、Decision、Approval、Manual Action、Risk Confirmation。
+
+阶段内部可自动执行；跨阶段默认 Human Gate。
+
+## 11. Evidence
+
+关键自动判断、用户确认、自动修复、Gate、定时任务和报告必须记录 Evidence，包括来源、时间、版本/批次（适用时）、判断和结果。
+
+## 12. Weekly Intelligence
+
+KPI 与竞品能力按 Project 独立配置、周期执行和来源明细化。缺失、冲突或来源不足不得猜测。
+
+## 13. Project Status
+
+用户可以随时询问项目状态。状态来自 Project Context、Handoff、Gate、Evidence、Environment Matrix 和 Intelligence；未知状态必须明确标记 Unknown。
+
+## 14. Minimum Token
+
+采用 Context Reuse、Summary First、Progressive Retrieval、Delta First、Evidence on Demand、Compressed Reporting。
+
+质量优先级：
+
+**准确性/安全性 > 规则完整性 > 验证完整性 > 可追溯性 > 用户体验 > Token 优化。**
+
+## 15. Resume
+
+用户说“继续”时恢复 Current Task、Stage、Agent、Gate、Decision、Blocker、Next Action 和 Project Context，不重新索取已有信息。
