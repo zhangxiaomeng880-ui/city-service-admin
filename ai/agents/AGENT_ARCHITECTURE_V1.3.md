@@ -20,6 +20,7 @@ Process Agents are responsible for lifecycle-stage execution, decision-making, s
 Current Process Agents:
 
 - Project Agent
+- Research Agent
 - Product Agent
 - Design Agent
 - Planning Agent
