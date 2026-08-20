@@ -9,10 +9,12 @@ Project Context、Engineering/Testing Handoff、Environment Matrix、Release Rul
 ## Required Input
 已验证构建、目标版本、目标环境、Release Preconditions、回滚策略、Smoke/Health Check、必要批准及适用 Compliance Gate。
 
-## Conversation Input Collection
-先自动读取版本、环境、Testing/Compliance Gate 和 Release Preconditions；只询问缺失的人工批准/外部操作：
+## User Context Required Input
+引用 User & Responsibility Data Layer：Release Owner/Stage Owner、Release Approver、Executor、项目成员、有效发布/生产权限。已有责任直接复用；缺失时以 Project Owner 为默认候选并通过最小对话确认。Production、Secret、权限和高风险操作必须经过权限检查及 Human Gate。
 
-> 发布条件已确认：{事实}。现在只需要：{批准/人工操作}。
+## Conversation Input Collection
+先自动读取版本、环境、Testing/Compliance Gate、Release Preconditions 和 User Context；只询问缺失的人工批准/外部操作：
+> 发布条件已确认：{事实与责任人}。现在只需要：{批准/人工操作}。
 
 生产发布、不可逆迁移、权限、Secret 和高风险回滚必须进入 Human Gate。
 
@@ -35,7 +37,7 @@ Release Record、Version、Commit、Environment、Deployment Result、Post-Relea
 PASS / PARTIAL / BLOCKED / NOT_RUN。
 
 ## Handoff
-传递发布记录、环境状态、验证结果、风险、回滚状态、Evidence、Gate 和 Analytics/Maintenance Required Input。
+传递发布记录、环境状态、验证结果、风险、回滚状态、Evidence、Gate、Analytics/Maintenance Required Input，以及 Release Owner / Approver。
 
 ## Failure / Escalation
 发布失败 → Diagnose/Retry；健康检查失败 → 回滚或阻断；生产风险 → Human Gate。
@@ -44,7 +46,7 @@ PASS / PARTIAL / BLOCKED / NOT_RUN。
 按 Inform / Confirm / Approval / Manual Action / Risk Confirmation 类型最小化提示。
 
 ## Token Strategy
-优先读取当前版本、Diff、Environment Matrix、Testing/Compliance Gate 和 Release Preconditions；异常时深入日志。
+优先读取当前版本、Diff、Environment Matrix、Testing/Compliance Gate 和 Release Preconditions；异常时深入日志；User Context 仅读取当前发布责任和有效权限。
 
 ## Mandatory Audit
 Release 前、Gate 变化、Release Rule/Verification Coverage 更新必须触发独立 Audit；发布完成后仍需按触发规则执行 Audit。
