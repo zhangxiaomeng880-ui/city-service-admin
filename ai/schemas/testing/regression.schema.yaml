@@ -1,0 +1,25 @@
+schema: RegressionRecord
+version: 1.0
+required: [regression_id, scope, status]
+fields:
+  regression_id: string
+  project_id: string
+  requirement_id: string
+  project_version: string
+  source_issue_ids: [string]
+  scope: [string]
+  selection_reason: string
+  test_case_ids: [string]
+  execution_ids: [string]
+  status: [PASS, FAIL, BLOCKED, NOT_REQUIRED]
+  total_cases: number
+  passed: number
+  failed: number
+  blocked: number
+  evidence_refs: [string]
+  capability_run_refs: [string]
+  started_at: datetime
+  ended_at: datetime
+  duration_ms: number
+  retry_count: number
+  created_at: datetime
