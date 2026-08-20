@@ -1,92 +1,138 @@
-# AI Native Retrospective V2.0
+# AI Native Retrospective V2.1
 
 ## 1. 本轮结论
 
-V1.x 逐步补齐了 Project、Human Gate、Testing、Compliance、Audit、KPI、竞品和 Existing Project Resume，但复盘发现这些能力如果只以独立 Agent/规则存在，跨 Agent 协作仍依赖上下文理解，容易产生重复询问、状态漂移、Gate 误继承和 Token 浪费。
+V2.0 补齐了 Project Context、Agent Contract、Standard Handoff、Gate Engine、Iteration Router、Environment Matrix、Failure Recovery 和 Project Status。
 
-因此 V2.0 的重点不再是继续增加 Agent，而是补齐项目操作系统的底层协作机制。
+本轮进一步发现：如果这些底层机制发生更新却没有独立 Audit，Audit 会退化为最终阶段的形式能力，无法真正承担独立监督职责。
 
-## 2. 本轮发现的问题
+因此 V2.1 明确：**Audit Agent 是持续触发的独立控制点，而不是项目末尾的可选步骤。**
 
-- Project Context 尚未被明确为唯一事实入口。
-- Agent Input / Output / Gate / Handoff 标准不够统一。
-- Agent 之间容易通过长文本交接。
-- Gate 状态缺少统一 Schema。
-- Iteration 路径虽然已有原则，但缺少正式 Router Contract。
-- Environment / Version / Branch 状态需要统一矩阵。
-- 失败恢复缺少统一 Retry / Diagnose / Escalate 机制。
-- 用户提示需要区分通知、确认、决策、批准和人工操作。
-- 项目状态缺少统一 Snapshot。
+## 2. 系统化检查结论
 
-## 3. V2.0 改进
+现有 Agent 体系必须统一接受 V2.0 Contract 检查，检查维度包括：
 
-新增：
+- Role / Boundary
+- Input
+- Required Input
+- Context Dependencies
+- Execution
+- Auto Actions
+- User Decision Conditions
+- Verification
+- Output
+- Evidence
+- Gate
+- Handoff
+- Failure / Escalation
+- User Prompt
+- Token Strategy
 
-- Agent Contract V2.0
-- Standard Handoff V2.0
-- Gate Engine V2.0
-- Iteration Router V2.0
-- Environment Matrix V2.0
-- Failure Recovery V2.0
-- Project Status V2.0
-- AI Native OS V2.0 Knowledge Base
+任何 Agent 缺失关键字段、边界不清、没有 Verification/Evidence、无法形成 Standard Handoff 或存在错误 Gate 继承，都必须进入整改。
 
-## 4. 形成的新原则
+## 3. 本轮新增规则
 
-### Principle 1
-Agent 是专业能力，不是项目状态的唯一持有者。
+### Mandatory Audit Trigger
 
-### Principle 2
-Project Context 是跨 Agent 的唯一项目事实入口。
+以下变化必须自动触发 Audit Agent：
 
-### Principle 3
-Handoff 是 Agent 间标准交接协议，而不是聊天记录。
+- Agent 更新
+- Rule / Contract 更新
+- Knowledge Base 更新
+- Retrospective 更新
+- 生命周期/阶段规则更新
+- Gate 更新
+- Project Context Schema 更新
+- 阶段完成或 Gate 变更
+- Release 前
+- 用户主动要求审计
 
-### Principle 4
-Gate 是质量边界，不能因上游 PASS 自动推导下游 PASS。
+修复后必须重新 Audit，旧 PASS 不得沿用。
 
-### Principle 5
-Iteration Router 决定最小必要流程，但不能跳过必要质量/安全 Gate。
+## 4. 为什么必须这样
 
-### Principle 6
-Environment 状态必须独立验证，代码同步不等于环境验证。
+如果每次更新都不触发 Audit：
 
-### Principle 7
-失败必须有边界；允许安全重试，但禁止无限循环和伪造成功。
+> Agent 可以修改规则 → 文档可以不同步 → Gate 可以错误继承 → 最后才 Audit。
 
-### Principle 8
-用户只在真正需要责任确认时介入。
+这会使 Audit 成为“事后盖章”，而不是质量控制。
 
-## 5. Token 优化复盘
+正确模型是：
 
-最有效的 Token 优化不是减少验证，而是减少重复上下文：
+```text
+Change
+↓
+Execution
+↓
+Verification
+↓
+Independent Audit
+↓
+PASS / PARTIAL / BLOCKED
+↓
+Human Gate（需要时）
+```
 
-- 复用 Project Context
-- 使用结构化 Handoff
-- 先摘要后详情
-- 先差异后完整文件
-- 证据按需读取
-- 用户端压缩输出
+对于文档/规则更新：
 
-因此 V2.0 将 Token 优化定义为架构能力，而不是提示词技巧。
+```text
+Update
+↓
+Audit
+↓
+发现问题
+↓
+修复
+↓
+重新 Audit
+↓
+形成新的 Audit Cycle
+```
 
-## 6. 下一阶段观察
+## 5. 形成的新原则
 
-- Agent 路由准确率
-- Handoff 信息完整率
-- 重复提问率
+### Principle 9
+Audit 是持续独立监督，不是最终阶段装饰。
+
+### Principle 10
+任何影响项目操作系统行为的变更都必须留下 Audit Evidence。
+
+### Principle 11
+修复后的旧 Audit PASS 自动失效，必须重新审计。
+
+### Principle 12
+Knowledge Base、Retrospective 和 Agent/Rule 变更必须保持同步，并接受 Audit。
+
+## 6. Token 优化复盘
+
+Mandatory Audit 不意味着重复读取整个项目。Audit 应优先读取 Change Set、Diff、Contract、Gate、Evidence、Handoff 和受影响文档；只有发现异常才 Progressive Retrieval。
+
+因此“每次都审计”与“最小 Token”并不冲突：
+
+> **审计范围最小化，而不是取消审计。**
+
+## 7. 下一阶段观察
+
+- V2 Contract 合规率
+- Agent 边界冲突数
+- Audit 覆盖率
+- Audit Finding 发现率
+- 修复后重新 Audit 的闭环率
+- 旧 PASS 被正确失效的比例
+- Documentation Sync 完整率
+- Handoff 完整率
 - Gate 误判率
-- Environment 状态准确率
-- 自动修复成功率
-- 失败重试次数
-- 用户确认次数
-- 平均 Token 消耗
-- 任务完成质量
+- 重复提问率
+- Token 消耗与任务质量
 
-## 7. 结论
+## 8. 最终结论
 
-V2.0 完成后，项目体系的核心对象从“Agent 列表”转变为：
+V2.1 的核心不是增加一个“审计步骤”，而是把 Audit 变成 AI Native OS 的**持续独立监督机制**。
 
-**Project Context + Orchestrator + Agents + Handoff + Gates + Evidence + Human Decisions + Iteration**。
+完整模型升级为：
 
-后续新增能力必须优先复用这些基础机制，而不是为每个新需求再创建一套独立流程。
+**Project Context + Orchestrator + Agents + Handoff + Gates + Evidence + Mandatory Audit + Human Decisions + Iteration + Retrospective**。
+
+后续任何系统能力变更，都必须同时完成：
+
+**变更 → 验证 → Audit → 知识沉淀 → 复盘 → 再次 Audit（如发生修复）**。
