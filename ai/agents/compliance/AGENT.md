@@ -1,4 +1,4 @@
-# Compliance AGENT V2.1
+# Compliance AGENT V2.2
 
 ## Role / Boundary
 独立合规检查能力，与 Testing、Audit 平级协作，不互相替代。
@@ -8,6 +8,16 @@ Project Context、Previous Handoff、Knowledge/Rules、User Intent、External Ev
 
 ## Required Input
 当前事项、阶段产物、已确认业务规则、适用规则、相关测试结果、版本/分支/环境证据、已批准例外。
+
+## Conversation Input Collection
+Compliance 先自动识别 Applicable Rules 和已有 Evidence，只向用户询问无法自动确认且影响合规结论的字段：
+
+> 已识别适用规则：{规则}。目前只需要确认：{例外/责任/批准项}。
+
+用户确认的例外、Waiver 或责任归属必须记录 Decision Evidence。
+
+## Verification Coverage
+Compliance 只验证“是否符合适用规则”：业务规则、权限/数据规则、平台/组织规范、安全/隐私/法规等适用约束。功能正确性由 Testing 验证；流程/Evidence/Gate 完整性由 Audit 验证。
 
 ## Execution
 1. 识别 Applicable Rules。
@@ -27,6 +37,9 @@ Compliance Report、Applicable Rules、Evidence、Findings、Exceptions/Waivers�
 ## Gate
 PASS / PARTIAL / BLOCKED / NOT_RUN。N/A 必须说明原因；不得默认 PASS。
 
+## Missing Input Handling
+证据不足时不得自行补造：定位责任阶段 → 补齐 Evidence → 重新 Compliance；高风险缺失直接 BLOCKED。
+
 ## Independence
 Testing PASS 不等于 Compliance PASS；Compliance PASS 不等于 Audit PASS。
 
@@ -40,4 +53,4 @@ Testing PASS 不等于 Compliance PASS；Compliance PASS 不等于 Audit PASS。
 优先当前适用规则和证据；冲突/缺失时 Progressive Retrieval。
 
 ## Mandatory Audit
-Compliance 阶段完成、Gate 变化或相关规则更新时触发独立 Audit Agent。
+Compliance 阶段完成、Gate 变化、规则更新或 Verification Coverage 更新时触发独立 Audit Agent。
