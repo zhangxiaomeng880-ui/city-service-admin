@@ -7,6 +7,7 @@
 流程类 Agent 负责项目生命周期中的阶段执行、阶段决策、Gate 与 Handoff。
 
 - Project Agent：创建/刷新 Project Context
+- Research Agent：研究与信息获取
 - Product Agent：需求、业务目标、规则、验收标准与综合产品决策
 - Design Agent：UX/UI、视觉、交互与组件规范
 - Planning Agent：技术方案、架构与任务拆解
@@ -72,6 +73,8 @@ Model Router 是全局通用能力，不属于某一个阶段。
 
 目标是：在满足质量门槛的前提下，选择最低成本可行模型。模型执行数据、Token、Cost、Quality、Retry 和 Escalation 必须记录并用于后续模型路由优化。
 
+**注：动态模型路由算法本身暂不在本 Contract / Agent MD 中定稿，作为独立专项设计。**
+
 数据分析遵循 Tool First 原则：确定性计算优先使用 SQL、Python 或 Analytics Tool，LLM 主要用于解释、诊断和推荐。
 
 ## 6. Quality Boundary
@@ -84,7 +87,47 @@ Model Router 是全局通用能力，不属于某一个阶段。
 
 Compliance 和 Audit 都可以读取 Testing 结果，但不能因为 Testing PASS 就自动得出 Compliance 或 Audit PASS。
 
-## 7. Shared Execution Rule
+## 7. Unified Agent MD Contract
+
+所有 Agent MD 必须遵循：
+
+`ai/rules/AGENT_MD_CONTRACT_V1.0.md`
+
+Contract 统一定义：
+
+- Agent 定义与职责边界
+- Input / Input Validation
+- Context Assembly
+- Task Classification
+- Capability Detection
+- Tool Selection
+- Model Selection
+- Execution
+- Human-in-the-Loop
+- Structured / Human-readable Output
+- Evidence
+- Quality Gate
+- Handoff
+- State
+- Parallel Task
+- Reuse
+- Token / Cost
+- Audit
+- Knowledge Handoff
+
+任何 Agent MD 不得自行建立与 Contract 冲突的执行套路。
+
+## 8. Audit Agent
+
+Audit Agent 按统一 Contract 对 Agent / Task / Execution 进行独立审计。
+
+位置：`ai/agents/audit/AGENT.md`
+
+Audit 必须检查 Contract 合规、执行证据、Tool / Model 选择、Token / Cost、Output、Handoff、Reuse、State 以及独立性。
+
+只有 `AUDIT_PASS` 才作为正式接受结果。
+
+## 9. Shared Execution Rule
 
 所有 Agent 执行前统一检查：
 
@@ -96,7 +139,7 @@ Compliance 和 Audit 都可以读取 Testing 结果，但不能因为 Testing PA
 
 不得重复询问已有且仍有效的项目上下文。
 
-## 8. Shared Output Contract
+## 10. Shared Output Contract
 
 Agent 应能够提供：
 
@@ -111,6 +154,6 @@ Agent 应能够提供：
 
 状态：`COMPLETED / PARTIAL / BLOCKED / SKIPPED`。
 
-具体 Stage Contract 见 `ai/rules/STAGE_CONTRACT.md`。
-
 完整架构见 `ai/agents/AGENT_ARCHITECTURE_V1.3.md`。
+
+设计过程沉淀见 `ai/retrospective/AGENT_MD_CONTRACT_DESIGN_V1.0.md`。
