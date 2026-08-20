@@ -2,30 +2,42 @@
 
 ## 1. 背景
 
-此前各 Agent 已分别定义 Input、Execution、Model、Output 等内容，但容易出现每个 Agent 自己形成一套执行套路的问题。
+此前各 Agent 分别定义 Input、Execution、Model、Output 等内容，容易逐渐形成每个 Agent 自己的一套执行套路。
 
-本次讨论确认：专业 Agent 的能力可以不同，但 Agent 的执行机制必须统一。
-
-## 2. 核心判断
+本次确定：专业能力可以不同，但 Agent 的执行机制必须统一。
 
 > Agent MD 描述“这个 Agent 做什么”；统一 AGENT MD Contract 描述“所有 Agent 必须怎么做”。
 
-因此 Contract 应成为所有 Agent MD 的上层约束。
+## 2. 为什么必须统一
 
-## 3. 为什么必须统一
-
-### 3.1 避免 Agent 套路分裂
-
-如果 Product、Design、Competitor、Data 各自定义 Input / Output / Execution，长期会导致：
+统一 Contract 用于解决：
 
 - 输入标准不一致；
 - 用户询问方式不一致；
 - Task 与 Conversation 边界不一致；
-- 模型选择不可比较；
+- Tool / MCP / Model 选择无法比较；
 - Token / Cost 无法统一统计；
-- Audit 无法形成统一标准。
+- Audit 无法形成统一标准；
+- Agent 越权和职责漂移。
 
-### 3.2 支持多任务并行
+## 3. 两大 Agent 分类
+
+正式分为：
+
+### Process Agent
+
+负责生命周期阶段执行、阶段决策、Gate 和 Handoff。
+
+### Capability Agent
+
+负责跨阶段复用的专业能力，可独立执行，也可被 Process Agent 调用。
+
+当前能力类 Agent：
+
+- Competitor Analysis
+- Data Analysis
+
+## 4. 多任务 / 多 Conversation
 
 Product 阶段可能同时存在：
 
@@ -33,71 +45,20 @@ Product 阶段可能同时存在：
 - 每周竞品 Task；
 - 每周 KPI 数据分析 Task。
 
-这些 Task 应独立 Conversation、独立状态、独立成本记录，并通过结构化结果汇聚。
-
-### 3.3 支持能力复用
-
-Competitor Analysis 与 Data Analysis 属于 Capability Agent，而不是 Product Agent 的子功能。
-
-Product Agent 应通过 Capability Detection 判断是否需要能力，并在人工需求场景向用户提示可选能力；已有有效结果优先复用。
-
-## 4. 本次确定的统一执行链路
+因此采用：
 
 ```text
-Task
- ↓
-Input Validation
- ↓
-Context Assembly
- ↓
-Task Classification
- ↓
-Capability Detection
- ↓
-Tool / Model Selection
- ↓
-Execution
- ↓
-Quality Gate
- ↓
-Structured Output
- ↓
-Human-Readable Output
- ↓
-Handoff
- ↓
-Knowledge / Audit Evidence
+Phase
+├─ Task A → Conversation A
+├─ Task B → Conversation B
+└─ Task C → Conversation C
 ```
 
-## 5. 本次确定的关键通用能力
+Task 独立拥有 Context、State、Execution Evidence、Token、Cost 和 Model Run，可并行执行，并通过结构化结果 / Project Context / Knowledge Base 汇聚。
 
-### Capability Router
+## 5. 人工需求与能力调用
 
-识别是否存在可复用专业能力。
-
-### Tool Router
-
-判断确定性工作是否应由工具完成。
-
-### Model Router
-
-属于 Common Agent Runtime 的通用能力。本次只确定 Contract，不锁定具体动态路由算法，后续单独设计。
-
-### Quality Gate
-
-统一判断输入、执行、输出、证据和 Handoff 质量。
-
-### Token & Cost Ledger
-
-记录到 Task / Step / Model Run，形成模型选择和成本优化的证据。
-
-### Audit
-
-独立检查 Agent 是否遵守 Contract，并检查证据、成本和结果可追溯性。
-
-## 6. 人工需求的特殊规则
-
-人工进入 Product 时，不意味着自动执行所有能力。
+人工进入 Product 不意味着自动调用全部能力。
 
 正确方式：
 
@@ -119,25 +80,124 @@ Existing Valid Result?
           └─ Skip
 ```
 
-该设计兼顾分析完整性、用户决策权和 Token / Cost 控制。
+这同时兼顾分析完整性、用户决策权和成本控制。
 
-## 7. 审计原则
+## 6. Common Capability Pool 与 MCP
 
-统一 Contract 完成后，Audit Agent 不再针对每个 Agent 自己发明检查标准，而是依据 Contract 逐项审计。
+本轮进一步明确：工具不是只有系统内置工具。
 
-重点检查：
+Common Capability Pool 包含：
 
-- Agent 分类；
-- 职责边界；
-- Input；
-- Input Validation；
+- Built-in / System Tools
+- Project Tools
+- User-configured MCPs
+- Registered Capability Agents（作为专业能力类）
+
+用户配置的 MCP 属于公共能力池，而不是某一个 Agent 的私有能力。
+
+但“公共”不等于“无条件调用”。Agent 必须检查：
+
+- 授权；
+- 能力是否匹配 Task；
+- 输入 / 输出 Schema；
+- 可用状态；
+- 成本 / 延迟；
+- 审计能力。
+
+并记录 MCP Tool Run。
+
+## 7. 统一执行策略
+
+```text
+Task
+ ↓
+Task Classification
+ ↓
+Capability Detection
+ ↓
+Deterministic Tool / MCP?
+ ├─ Yes → Tool / MCP
+ └─ No
+      ↓
+Specialist Capability Agent?
+ ├─ Yes → Capability Agent
+ └─ No
+      ↓
+Model
+```
+
+这不是绝对互斥关系。正确执行可以组合 Tool + Capability + Model。
+
+核心原则是：**能可靠由工具完成的确定性工作，不应该无意义地消耗 LLM Token。**
+
+## 8. 通用能力
+
+### Capability Router
+
+识别专业能力是否能增强当前 Task，并处理能力结果复用 / 推荐。
+
+### Tool Router / Common Capability Pool
+
+发现和选择系统工具、项目工具、用户 MCP，并验证权限与能力匹配。
+
+### Model Router
+
+属于 Common Agent Runtime 的通用能力。本轮只定义 Model Selection Contract，不锁定 Dynamic Model Routing 算法，后续单独设计。
+
+### Quality Gate
+
+统一检查 Input、Execution、Output、Evidence、Handoff。
+
+### Token & Cost Ledger
+
+记录到 Task / Step / Tool / MCP / Model Run，形成成本优化证据。
+
+### Audit
+
+独立依据 Contract 审计 Agent MD 和实际执行，不允许被审计 Agent 自我认证。
+
+## 9. 统一 Contract 最终结构
+
+所有 Agent MD 固定遵循：
+
+1. Agent Type
+2. Responsibility
+3. Non-Responsibility
+4. Trigger
+5. Input
+6. Input Validation
+7. Context Assembly
+8. Task Classification
+9. Capability Detection
+10. Execution Strategy / Tool / MCP Selection
+11. Model Selection
+12. Execution
+13. Human-in-the-Loop
+14. Output
+15. Evidence
+16. Quality Gate
+17. Handoff
+18. State
+19. Parallel Task
+20. Reuse
+21. Token & Cost
+22. Audit
+23. Knowledge Handoff
+
+## 10. Audit 原则
+
+Audit Agent 按统一 Contract 逐项审计，不为每个 Agent 发明独立标准。
+
+必须检查：
+
+- Agent 分类与职责边界；
+- Input / Validation；
 - Context；
-- Capability；
-- Tool / Model；
+- Capability Detection；
+- Tool / MCP / Capability / Model；
 - Execution；
 - Human-in-the-Loop；
-- Output；
-- Evidence；
+- Output / Evidence；
 - Quality Gate；
 - Handoff；
 - State；
@@ -146,36 +206,36 @@ Existing Valid Result?
 - Token / Cost；
 - Knowledge Handoff。
 
-只有 `AUDIT_PASS` 才允许正式接受。
+只有 `AUDIT_PASS` 才允许正式接受；缺失关键证据应为 `AUDIT_BLOCKED`，不能猜测 PASS。
 
-## 8. 动态模型路由边界
+## 11. 动态模型路由边界
 
-本次明确：动态模型路由是 Common Agent Runtime 的通用能力，不属于 Competitor Analysis 或 Data Analysis Agent 私有能力。
+动态模型路由属于 Common Agent Runtime 通用能力，不属于 Competitor Analysis 或 Data Analysis 私有能力。
 
-但本轮只定义统一 Contract 对 Model Selection 的要求，不提前锁定动态模型路由算法。
+本轮只规定所有 Agent 必须记录 Model Selection evidence；不提前锁定动态路由算法。
 
-后续将单独设计：
+后续专项设计：
 
 - 候选模型池；
-- 任务复杂度识别；
-- 质量阈值；
+- Task / Complexity 识别；
+- Quality Threshold；
 - 成本计算；
 - 路由策略；
 - 升级策略；
-- 模型表现反馈；
-- 成本 / 质量优化。
+- 历史表现反馈；
+- Quality-Constrained Minimum Cost 优化。
 
-## 9. 沉淀结论
+## 12. 本轮最终沉淀
 
-本轮最终形成：
-
-1. 两大 Agent 分类：Process / Capability；
-2. 统一 AGENT MD Contract；
-3. Product 多 Task / 多 Conversation 模型；
-4. Capability Detection 与用户选择机制；
-5. Tool First 原则；
-6. Model Selection 统一记录机制；
-7. Quality Gate；
-8. Token / Cost Ledger；
-9. 独立 Audit；
-10. 动态模型路由单独专项设计。
+1. Process / Capability 两大分类；
+2. Unified AGENT MD Contract；
+3. Product 多 Task / 多 Conversation；
+4. Capability Detection + 用户选择；
+5. Common Capability Pool；
+6. User-configured MCP 作为公共能力；
+7. Tool First；
+8. Model Selection 统一记录；
+9. Quality Gate；
+10. Token / Cost Ledger；
+11. 独立 Audit；
+12. Dynamic Model Routing 单独专项设计。
