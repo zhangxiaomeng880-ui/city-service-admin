@@ -1,9 +1,9 @@
-# AI Native OS V2.1
+# AI Native OS V2.2
 
 ## 定位
-V2.1 不以增加 Agent 数量为核心，而是把 Agent 协作、项目事实、质量边界和持续审计标准化，使项目从“Agent 流程”升级为可验证、可追溯的项目操作系统。
+V2.2 将 Agent 协作、项目事实、质量边界、持续审计和 Contract Migration 固化为可验证、可追溯的项目操作系统。
 
-## 1. Core Architecture
+## Core Architecture
 
 ```text
 User Intent
@@ -14,7 +14,7 @@ Project Context
 ↓
 Iteration / Stage Router
 ↓
-Agent
+Agent Contract V2.1
 ↓
 Standard Handoff
 ↓
@@ -22,88 +22,71 @@ Verification
 ↓
 Gate Engine
 ↓
-Independent Audit（按触发规则）
+Independent Audit（Mandatory Trigger）
 ↓
 Evidence
 ↓
 Human Decision / Next Stage
 ```
 
-## 2. Project Context
+## Agent Contract
 
-Project Context 是跨 Agent 的唯一项目事实入口。维护项目基本信息、业务规则、技术信息、版本、环境、KPI、竞品、当前状态、Blocker、Decision、Gate 和历史。Agent 不应依赖聊天历史作为唯一事实源。
+当前执行 Agent 必须具备：Role / Boundary、Input、Required Input、Context Dependencies、Execution、Auto Actions、User Decision、Verification、Output、Evidence、Gate、Handoff、Failure / Escalation、User Prompt、Token Strategy。
 
-## 3. Agent Contract
+新增 Agent 必须先满足 Contract，再进入 Audit。
 
-所有 Agent 从项目开始即使用统一 Agent Contract：Role、Input、Required Input、Execution、Verification、Output、Evidence、Gate、Handoff、Failure、User Prompt、Token Strategy。
+## Current Agent Set
 
-## 4. Handoff
+Project、Product、Design、Planning、Engineering、Testing、Compliance、Release、Maintenance、Analytics、Research/Competitor、Audit。
 
-Agent 间不依赖长文本交接，使用 Standard Handoff。下游只读取必要字段；完整证据按需读取。
+## Mandatory Audit
 
-## 5. Gate Engine
-
-统一 Gate 状态和证据要求，但不统一专业判断责任。Testing、Compliance、Audit 保持独立。
-
-## 6. Mandatory Audit
-
-Audit Agent 是独立 Agent，不是最终阶段的可选摆设。
-
-以下事件必须触发独立 Audit：
+以下事件必须自动触发独立 Audit：
 
 - 任意 Agent / Rule / Contract 更新
 - Knowledge Base 更新
 - Retrospective 更新
-- 生命周期或阶段规则更新
-- Gate 规则更新
+- 生命周期 / 阶段规则更新
+- Gate / Handoff / Environment 规则更新
 - 重大 Project Context 结构变更
 - 阶段完成或 Gate 生成/变更
 - Release 前
 - 用户主动要求审计
 
-变更被修复后必须产生新的 Audit Cycle，旧 PASS 不得沿用。
+修复后旧 PASS 自动失效，必须开启新的 Audit Cycle。
 
-## 7. Project Lifecycle
+## V2.1 Migration Result
 
-Project 支持 New Project 和 Existing Project Resume。已有项目恢复后，根据本次变化通过 Iteration Router 选择最小必要阶段。
+本轮已完成 Product、Design、Planning、Engineering、Testing、Compliance、Release、Maintenance、Analytics、Research/Competitor 的 V2.1 Agent Contract 建立/迁移，并完成独立 Audit Cycle。
 
-## 8. Iteration Router
+Audit PASS 的范围仅为本次 Contract/规则迁移，不代表代码运行、业务功能或生产环境 PASS。
 
-根据用户意图、变更范围、风险、Project Context、已有 Gate 和环境状态动态选择阶段。不能为了缩短路径跳过必要质量、安全或合规 Gate。
+## Project Lifecycle
 
-## 9. Environment Matrix
+Project 支持 New Project 和 Existing Project Resume。Resume 后通过 Iteration Router 选择最小必要阶段。
 
-统一维护 Local / Preview / Test / Production 的 Branch、Version、Commit、Status、Last Verified 和 Evidence。环境状态必须独立验证。
+## Quality Boundaries
 
-## 10. Failure Recovery
+Testing、Compliance、Audit 三者独立；任何一个 Gate PASS 不自动继承到另一个 Gate。
 
-所有自动执行都有有限重试边界。失败必须分类；安全可重复操作可重试，关键失败进入 Diagnose / Escalate，不能无限循环或伪造 PASS。
+## Environment
 
-## 11. User Interaction Types
+Environment Matrix 统一维护 Local / Preview / Test / Production 的 Branch、Version、Commit、Status、Last Verified、Evidence。
 
-- Inform：通知
-- Confirm：确认下一步
-- Decision：业务选择
-- Approval：正式批准
-- Manual Action：用户必须执行外部操作
-- Risk Confirmation：高风险操作确认
+## Failure Recovery
 
-## 12. Project Status
+采用 Retry → Diagnose → Escalate；有限重试，不允许无限循环或伪造 PASS。
 
-用户可以随时询问项目状态。Status Snapshot 从 Project Context、Handoff、Gate、Evidence、Environment Matrix 和 Intelligence 生成，不依赖模型猜测。
+## Weekly Intelligence
 
-## 13. Weekly Intelligence
+KPI 与竞品以 Project 为边界持续运行，来源明细、Evidence 和目标对比必须保留。
 
-KPI 和竞品继续项目维度周期化运行，数据来源明细和 Evidence 是强制要求。
-
-## 14. Minimum Token
+## Minimum Token
 
 Context Reuse、Summary First、Progressive Retrieval、Delta First、Evidence on Demand、Compressed Reporting。
 
-质量优先级：
+**审计范围最小化，不取消审计；Token 优化不得减少关键验证。**
 
-**准确性/安全性 > 规则完整性 > 验证完整性 > 可追溯性 > 用户体验 > Token 优化。**
+## Core Principle
 
-## 15. Core Principle
-
-> Agent 是能力，Orchestrator 是协作，Project Context 是事实，Handoff 是交接，Gate 是质量边界，Evidence 是依据，Audit 是独立监督，Human Gate 是责任确认，Iteration 是持续循环。
+> Agent 是能力，Orchestrator 是协作，Project Context 是事实，Handoff 是交接，Gate 是质量边界，Evidence 是依据，Audit 是独立持续监督，Human Gate 是责任确认，Iteration 是持续循环。
