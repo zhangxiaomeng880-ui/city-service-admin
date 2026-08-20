@@ -4,7 +4,7 @@
 
 城市服务后台只是第一个业务样例，重点不是一次性完成一个 Demo，而是建立一套可以持续复用的：
 
-**Research → Product → Design → Planning → Engineering → QA → Release → Analytics → Iteration** 工作流。
+**Research → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics → Maintenance → Audit → Iteration** 工作流。
 
 ## 当前业务样例
 
@@ -33,6 +33,14 @@
 
 AI 不是单独的 Coding 工具，而是贯穿产品生命周期的协作执行者。人的核心职责是目标、判断、优先级和验收；AI 负责研究、分析、产出、执行、验证和总结，并通过 GitHub 留下可追溯的项目资产。
 
+### Testing / Compliance / Audit 边界
+
+- **Testing AGENT**：验证功能是否正确工作。
+- **Compliance AGENT**：验证是否符合已确认规则、约束和适用要求。
+- **Audit AGENT**：独立验证流程、结论、证据和 Gate 是否真实、完整、可追溯。
+
+三者相互独立。Testing PASS 不等于 Compliance PASS；Compliance PASS 也不等于 Audit PASS。
+
 ## Project Context
 
 项目基础信息和已确认上下文属于生命周期级资产，由 Project Agent 创建/刷新，后续阶段直接复用。
@@ -48,3 +56,4 @@ AI 不是单独的 Coding 工具，而是贯穿产品生命周期的协作执行
 - `ai/knowledge-base/v1.0/AI_NATIVE_PROJECT_OS_V1.0.md`
 - `ai/rules/AI_RULES.md`
 - `ai/rules/STAGE_CONTRACT.md`
+- `ai/agents/compliance/AGENT.md`
