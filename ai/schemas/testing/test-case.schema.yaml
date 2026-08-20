@@ -1,0 +1,49 @@
+schema: TestCaseSet
+version: 1.0
+required:
+  - test_case_set_id
+  - project_id
+  - version
+  - cases
+fields:
+  test_case_set_id: string
+  project_id: string
+  requirement_id: string
+  prd_version: string
+  design_version: string
+  technical_solution_version: string
+  code_versions:
+    frontend: string
+    backend: string
+  version: string
+  cases:
+    type: array
+    item:
+      test_case_id: string
+      requirement_refs: [string]
+      acceptance_criteria_refs: [string]
+      test_type: [visual, functional, api, performance, boundary, tracking, compatibility, compliance_runtime]
+      priority: [P0, P1, P2, P3]
+      title: string
+      preconditions: [string]
+      test_data_ref: string
+      steps:
+        type: array
+        item:
+          step_id: string
+          action: string
+          expected_result: string
+      automation_supported: boolean
+      required_capability_type: [TOOL, USER_MCP, USER_SKILL, CAPABILITY_AGENT, MODEL, NONE]
+      status: [DRAFT, AUDITED, RETIRED]
+      evidence_refs: [string]
+      created_at: datetime
+      created_by: string
+coverage:
+  requirement_coverage: number
+  acceptance_criteria_coverage: number
+  test_type_coverage: object
+provenance:
+  source_artifacts: [string]
+  generation_task_id: string
+  generation_agent_version: string
