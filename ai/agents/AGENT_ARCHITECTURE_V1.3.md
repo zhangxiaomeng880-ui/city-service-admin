@@ -1,4 +1,4 @@
-# AI Native Agent Architecture V1.5
+# AI Native Agent Architecture V1.6
 
 ## 1. Purpose
 
@@ -166,7 +166,38 @@ Release Output → Maintenance Input
 
 Supporting Artifacts can be referenced, but the approved Phase Output remains the primary downstream input.
 
-## 8. Capability Router
+## 8. Design Resource Library Boundary
+
+Design uses the common runtime and does not create a separate execution framework for design resources.
+
+The Design Process Agent may consume and maintain an applicable Design Resource Library through the shared Artifact / Knowledge / Resource mechanisms.
+
+The Design Resource Library has four resource classes:
+
+1. **Common Component Library** — approved reusable components, variants, states, patterns, and usage examples.
+2. **Component Specifications** — component anatomy, properties, behavior, interaction, composition, accessibility / responsive rules where applicable, and usage / anti-usage rules.
+3. **Design Standards** — visual language, layout / grid, spacing, typography, color, iconography, interaction patterns, responsive / platform rules, and relevant naming / handoff standards.
+4. **Project Design Assets** — existing Figma sources, project-specific patterns, brand rules, approved design decisions, and project-specific component extensions.
+
+The Design Agent resolves applicable resources before substantive design execution and prefers approved reusable resources over creating duplicates.
+
+Resource promotion follows:
+
+```text
+New / Changed Design Resource
+ ↓
+Classification
+ ↓
+Specification + Evidence + Decision
+ ↓
+Quality Review
+ ↓
+Project Asset OR Common Resource Candidate
+```
+
+A project resource is not automatically promoted to the Common Component Library. Approved reusable resources must retain resource ID, version, owner / source, scope, status, and evidence as applicable.
+
+## 9. Capability Router
 
 Capability Router identifies which registered capability can satisfy or improve a Task.
 
@@ -180,7 +211,7 @@ Candidate types:
 
 The router checks capability match, authorization, availability, quality requirements, cost, latency, and applicable user decisions.
 
-## 9. Execution Strategy
+## 10. Execution Strategy
 
 Before selecting a Model, determine whether the Task can be reliably completed through a deterministic Tool / MCP / Skill or a registered Capability Agent.
 
@@ -198,7 +229,7 @@ Tool / MCP / Skill / Capability Agent / Model
 
 Strategies may be composed. Deterministic work should use deterministic Tools / MCPs whenever possible.
 
-## 10. Model Router
+## 11. Model Router
 
 Model Router is a global common capability.
 
@@ -221,7 +252,7 @@ Minimum Token is not equivalent to optimal model selection. The optimization tar
 
 The detailed Dynamic Model Routing algorithm is maintained separately.
 
-## 11. Model Escalation
+## 12. Model Escalation
 
 ```text
 Lowest-Cost Feasible Model
@@ -233,7 +264,7 @@ Quality Gate
 
 Every escalation records its reason and usage.
 
-## 12. Execution Records and Business Artifacts
+## 13. Execution Records and Business Artifacts
 
 Execution Records and Output Artifacts have different responsibilities.
 
@@ -249,12 +280,12 @@ Examples: PRD, Competitor Report, KPI Report, Design Specification, Technical Pl
 
 For requirement definition, Product MUST produce one authoritative versioned PRD Artifact.
 
-## 13. Decision and Traceability
+## 14. Decision and Traceability
 
-Material product decisions are Decision Records.
+Material product and design decisions are Decision Records.
 
 ```text
-PRD / Phase Output
+Phase Output / Artifact
  ↓
 Decision Record
  ↓
@@ -267,7 +298,7 @@ Step / Tool / MCP / Skill / Capability / Model Run
 
 Audit must be able to trace important outputs back to evidence and decisions.
 
-## 14. Phase Handoff and Next-Phase Start
+## 15. Phase Handoff and Next-Phase Start
 
 After required Quality and independent Audit gates pass, create a Phase Handoff referencing the approved Phase Output.
 
@@ -281,7 +312,7 @@ The next Phase performs its own Readiness Check. If ready, the system should pro
 
 The next business Phase starts after user confirmation unless an explicit Project Rule authorizes automatic progression.
 
-## 15. Task and Conversation Rules
+## 16. Task and Conversation Rules
 
 - One Phase does not equal one Conversation.
 - Independent Tasks use independent Conversations.
@@ -289,7 +320,7 @@ The next business Phase starts after user confirmation unless an explicit Projec
 - Tasks exchange results through structured Outputs / Artifacts, Project Context, and Knowledge Base.
 - Valid existing capability results should be reused.
 
-## 16. Quality and Cost Feedback Loop
+## 17. Quality and Cost Feedback Loop
 
 ```text
 Task
@@ -307,7 +338,7 @@ Model Performance / Capability Performance Registry
 Future Optimization
 ```
 
-## 17. Audit Boundary
+## 18. Audit Boundary
 
 Audit Agent remains independent from the Agent being audited.
 
@@ -322,12 +353,13 @@ Audit may inspect:
 - Token / Cost;
 - retries / escalations;
 - PRD-to-decision-to-evidence linkage;
+- Design resource reuse / extension / promotion when applicable;
 - Phase-to-Phase handoff integrity;
 - unnecessary duplicate execution.
 
 An Agent must not self-certify independent Audit.
 
-## 18. Contract References
+## 19. Contract References
 
 - `ai/rules/AGENT_MD_CONTRACT_V1.0.md`
 - `ai/rules/PHASE_CONTRACT_V1.0.md`
