@@ -1,126 +1,107 @@
-# Conversation Orchestration V1.2
+# Conversation Orchestration V2.0
 
 ## 目标
-将所有 Agent 的执行统一为自然语言驱动的人机对话，同时控制 Token 消耗，保证准确性、质量和可追溯性。
+将 AI Native 项目变成自然语言驱动的项目操作系统：用户表达目标，Orchestrator 恢复上下文、路由 Agent、管理用户责任、推进任务并保证 Evidence/Gate 可追溯。
 
-## 1. 统一交互模型
+## 1. Unified Flow
 
-用户自然语言 → Context Resolution → Stage/Agent Routing → Required Input Check → Agent 提示/自动执行 → 用户回复（如需要）→ 意图判断 → 执行 → Verification/Gate → 下一步提示。
+```text
+User Intent
+↓
+Context Resolution
+↓
+Project / Task State
+↓
+Iteration / Stage Router
+↓
+Required Input Check
+↓
+Agent Execution
+↓
+Verification
+↓
+Evidence
+↓
+Gate Engine
+↓
+Standard Handoff
+↓
+Human Gate / Next Action
+```
 
-用户不需要管理 Agent，也不需要记忆命令格式。
+## 2. Context First
 
-## 2. Project 入口
+先读取 Project Context 和最近 Handoff，再读取增量差异；不得把完整聊天历史作为默认输入。
 
-创建新项目时，Project AGENT 首先向用户提示最小必要项目信息，并允许用户分批回答；已有信息由 Project Context、GitHub、Figma 等来源自动获取。
+## 3. Routing
 
-Project AGENT 同时执行基础设施检查：仓库、分支、最新状态、工作树、依赖、运行时、配置、构建/测试/Preview、设计资源和版本等。
+Orchestrator 根据用户意图和任务范围选择 Agent。Existing Project Resume 后必须经过 Iteration Router；不默认重跑完整生命周期。
 
-可安全自动修复的直接执行；需要授权、Secret、登录、生产操作或人工决策的事项必须提示用户。
+## 4. User Interaction Types
 
-## 3. 阶段完成后的 Human Gate
+### Inform
+仅通知用户，不需要回复。
 
-每个阶段完成后，默认不静默跳转下一阶段。Agent 必须向用户报告：
+### Confirm
+确认是否继续下一步。
 
-- 当前阶段结果
-- Gate
-- 关键异常/待处理项
-- 下一阶段
+### Decision
+存在业务取舍，需要用户选择。
 
-然后询问：
+### Approval
+需要用户正式批准高影响动作。
 
-> 当前阶段已完成，是否进入下一阶段？
+### Manual Action
+需要用户在外部环境执行操作。
 
-只有用户确认后，Orchestrator 才进入下一阶段。若用户直接给出包含继续意图的自然语言，可解析为确认；若没有明确继续意图，则保持当前阶段。
+### Risk Confirmation
+高风险/不可逆动作必须明确确认。
 
-## 4. 主动提问规则
+## 5. Prompt Rules
 
-只在以下情况打断用户：
+只在以下情况主动打断：
 
-- 缺少 Required Input
-- 业务取舍无法自动判断
-- 高风险/不可逆操作需要确认
-- 授权、Secret、生产环境等必须人工完成
-- Gate 阻塞且需要用户决策
+- Required Input 缺失
+- Decision 无法自动判断
+- Approval 必需
+- Manual Action 必需
+- Risk Confirmation 必需
+- Gate Blocked
 
-其余情况自动执行。
+普通自动执行不逐步打断用户；完成后压缩汇报。
 
-## 5. 用户回答解析
+## 6. Stage Human Gate
 
-用户可以使用自然语言，例如“可以”“按之前的规则”“先这样”“继续”“不要改这个”等。Orchestrator 应解析 Intent、Decision、Scope 和是否更新 Project Context。
+阶段完成后默认：
 
-## 6. 最小 Token 执行协议
+> **{Stage} 已完成：{Gate}。** {关键结论/异常}。下一阶段为 **{Next Stage}**。是否进入下一阶段？
 
-### Context Reuse
-优先复用 Project Context 和上一阶段输出，不重复加载完整历史。
+用户确认后才跨阶段。
 
-### Progressive Retrieval
-先读取目录、状态、摘要和关键索引；只有发现需要证据时再读取具体文件/日志。
+## 7. Handoff
 
-### Delta First
-优先读取变更、差异、失败项，而非重复读取完整资产。
+所有跨 Agent 交接使用 Standard Handoff。下游读取必要字段，完整证据按需展开。
 
-### Minimal Prompt
-Agent 提示只包含当前决策所需信息，不重复已确认内容。
+## 8. Failure
 
-### Compressed Reporting
-正常结果只报告结论、关键异常、证据引用和下一步；完整过程写入项目资产，不全部发送给用户。
+失败使用 bounded Retry → Diagnose → Escalate。达到阈值、存在风险或需要用户决策时停止自动循环。
 
-### Quality Guard
-Token 优化不得省略 Required Input、关键规则、测试、Compliance、Audit、Evidence 或用户确认。
+## 9. Token Optimization
 
-## 7. 自动继续规则
+- Context Reuse
+- Summary First
+- Progressive Retrieval
+- Delta First
+- Evidence on Demand
+- Minimal Prompt
+- Compressed Reporting
 
-同一阶段内部：
+Token 优化不得省略 Required Input、Verification、Gate、Evidence、Compliance 或 Audit。
 
-- 可自动判断 → 自动继续
-- 可自动修复 → 自动修复并验证
-- 需要责任 Agent → 路由到责任 Agent
-- 需要用户决策 → 暂停并询问
+## 10. Weekly Project Intelligence
 
-跨阶段：
+KPI 和竞品周报由项目级配置驱动，自动运行并记录来源、时间、结果和 Evidence。失败不得伪造数据。
 
-- 默认在阶段 Gate 完成后向用户确认是否进入下一阶段。
+## 11. Project Status
 
-## 8. Evidence
-
-每次关键自动判断、用户确认、自动修复和 Gate 结果必须记录最小可追溯信息：时间、阶段、决策、依据、结果、责任 Agent。
-
-## 9. 用户提示模板
-
-### 阶段开始
-> 当前进入 **{Stage}**。我已读取已有项目上下文，目前缺少 {N} 项必要信息：{Items}。请直接用自然语言回复即可。
-
-### 自动执行
-> 输入已完整，我直接执行 {Action}，无需你额外操作。
-
-### 需要人工操作
-> 检查发现 {Issue}。该操作需要你手动完成：{Action}。完成后告诉我“继续”即可。
-
-### 阶段完成
-> **{Stage} 已完成：{PASS/PARTIAL}。** {关键结论}。下一阶段是 **{Next Stage}**。是否进入下一阶段？
-
-## 10. 周期任务
-
-Conversation Orchestrator 支持项目级定时任务，但定时任务必须基于 Project Context 中已配置的周期和数据源执行，并记录执行证据。
-
-### KPI Weekly
-每周按项目配置的时间自动：
-
-1. 收集用户已填写/确认的 KPI 数据。
-2. 保留每个 KPI 的来源明细：数据项、来源、时间范围、口径、值、采集时间、版本/批次（适用时）。
-3. 汇总周数据。
-4. 与 KPI Target 对比：目标值、实际值、差值、达成率、趋势。
-5. 自动生成周 KPI 报告。
-6. 对缺失或来源不完整的数据标记，而不是猜测或补值。
-
-### Competitor Weekly
-每周按项目配置的竞品清单、来源和关注维度自动：
-
-1. 收集竞品公开信息。
-2. 保留来源明细、发布时间、抓取时间、竞品、主题、原始链接/引用证据。
-3. 去重和归并同一事件。
-4. 汇总本周竞品变化。
-5. 自动生成项目维度竞品周报。
-6. 标记信息不确定、来源不足或需要人工判断的内容。
-
-定时任务失败时提示用户，不得伪造数据或报告。
+支持用户随时询问项目状态。Orchestrator 从 Project Context、Handoff、Gate、Evidence、Environment Matrix、KPI 和竞品状态生成 Snapshot。
