@@ -1,45 +1,49 @@
-# City Service Admin — AI Native Product Lab
+# City Service Admin — AI Native Product Lab V1.1
 
 这是一个用于验证 **AI Native 产品研发流程** 的实验项目。
 
-城市服务后台只是第一个业务样例，重点不是一次性完成一个 Demo，而是建立一套可以持续复用的：
+城市服务后台只是第一个业务样例，重点不是一次性完成一个 Demo，而是建立一套可以持续复用、可对话执行、可验证和可审计的研发机制。
 
-**Research → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics → Maintenance → Audit → Iteration** 工作流。
+## AI Native Workflow
 
-## 当前业务样例
+**Research → Product → Design → Planning → Engineering/Coding → Testing → Compliance → Release → Analytics / Maintenance → Audit → Iteration**
 
-城市服务管理：
+Iteration 是生命周期循环，不是 Agent。
 
-- 城市通过下拉列表选择，不在后台新增城市
-- 城市关联一级分类
-- 一级分类支持新增、编辑、删除、排序
-- 一级分类下管理二级服务
-- 服务支持新增、编辑、删除、排序
-- 服务编辑展示所属城市和所属分类
-- 支持批量发布
-- 前台城市可以切换
-- 发布后的前台按「城市 → 一级分类 → 二级服务」联动展示
+## Agent / Orchestration Boundary
 
-## 项目结构
+当前 Agent 体系保持稳定。Conversation Orchestrator 是交互/调度层，不新增业务 Agent。
 
-- `product/`：产品研究、需求、PRD、指标
-- `design/`：UX、UI、原型
-- `engineering/`：架构、源码、测试
-- `release/`：发布记录与版本资料
-- `analytics/`：数据分析与用户反馈
-- `ai/`：AI Agent、规则与工作流
+用户可以直接说：
 
-## AI Native 原则
+- “继续执行。”
+- “按照之前确认的方案继续。”
+- “这个调整一下。”
+- “先不要发布。”
 
-AI 不是单独的 Coding 工具，而是贯穿产品生命周期的协作执行者。人的核心职责是目标、判断、优先级和验收；AI 负责研究、分析、产出、执行、验证和总结，并通过 GitHub 留下可追溯的项目资产。
+系统自动恢复上下文、识别当前 Agent、判断是否需要用户、执行下一步并在 Gate 处暂停或继续。
 
-### Testing / Compliance / Audit 边界
+## Human-in-the-Loop
+
+用户负责目标、关键判断、优先级、必要确认和最终验收；Agent 负责分析、执行、验证和状态推进。
+
+只有 Required Input、Human Gate、高风险操作、规则冲突或阻塞需要人工处理时才主动询问用户。
+
+## Minimum-Token Execution
+
+所有环节采用：
+
+**Context Reuse → Progressive Retrieval → Summary First → Incremental Context → No Redundant Confirmation → Compressed Output**
+
+原则不是单纯减少 Token，而是在保证准确性、证据、验证和 Gate 完整性的前提下减少无效上下文和重复交互。
+
+## Quality Boundary
 
 - **Testing AGENT**：验证功能是否正确工作。
 - **Compliance AGENT**：验证是否符合已确认规则、约束和适用要求。
 - **Audit AGENT**：独立验证流程、结论、证据和 Gate 是否真实、完整、可追溯。
 
-三者相互独立。Testing PASS 不等于 Compliance PASS；Compliance PASS 也不等于 Audit PASS。
+三者相互独立。Testing PASS 不等于 Compliance PASS；Compliance PASS 不等于 Audit PASS。
 
 ## Project Context
 
@@ -47,13 +51,17 @@ AI 不是单独的 Coding 工具，而是贯穿产品生命周期的协作执行
 
 输入优先级：
 
-**Project Context → Previous Stage Output → Knowledge Base → User Input**。
+**Project Context → Previous Stage Output → Knowledge Base → Current User Message**
 
-因此，继续阶段、阶段切换或 Handoff 时不应重复要求用户提供已经确认的项目上下文；只补充当前阶段缺失的 Required Input。
+继续阶段、阶段切换或 Handoff 时不重复要求用户提供已有项目背景。
 
-完整规则位于：
+## V1.1 Core Documents
 
-- `ai/knowledge-base/v1.0/AI_NATIVE_PROJECT_OS_V1.0.md`
-- `ai/rules/AI_RULES.md`
-- `ai/rules/STAGE_CONTRACT.md`
+- `ai/knowledge-base/v1.1/AI_NATIVE_PROJECT_OS_V1.1.md`
+- `ai/rules/AI_RULES_V1.1.md`
+- `ai/rules/STAGE_CONTRACT_V1.2.md`
+- `ai/rules/CONVERSATION_ORCHESTRATION_V1.1.md`
+- `ai/agents/AGENT_INTERACTION_MATRIX_V1.1.md`
 - `ai/agents/compliance/AGENT.md`
+
+V1.0 文档保留作为历史版本和演进依据；当前执行以 V1.1 规则为准。
