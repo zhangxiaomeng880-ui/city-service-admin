@@ -1,0 +1,33 @@
+schema: TestIssue
+version: 1.0
+required: [issue_id, source_execution_id, title, status]
+fields:
+  issue_id: string
+  project_id: string
+  requirement_id: string
+  source_test_case_id: string
+  source_execution_id: string
+  project_version: string
+  frontend_code_version: string
+  backend_code_version: string
+  environment_version: string
+  type: [FUNCTIONAL, VISUAL, API, PERFORMANCE, BOUNDARY, TRACKING, COMPATIBILITY, COMPLIANCE, OTHER]
+  severity: [CRITICAL, HIGH, MEDIUM, LOW]
+  priority: [P0, P1, P2, P3]
+  title: string
+  description: string
+  reproduction_steps: [string]
+  expected: string
+  actual: string
+  evidence_refs: [string]
+  owner: string
+  status: [OPEN, TRIAGED, ASSIGNED, IN_PROGRESS, FIXED, READY_FOR_RETEST, RETESTING, CLOSED, DUPLICATE, WONT_FIX, DEFERRED, REJECTED, BLOCKED, REOPENED]
+  fix_task_id: string
+  fix_version: string
+  retest_execution_ids: [string]
+  regression_execution_ids: [string]
+  resolution: string
+  created_at: datetime
+  resolved_at: datetime
+  reopen_count: number
+  workflow_run_refs: [string]
