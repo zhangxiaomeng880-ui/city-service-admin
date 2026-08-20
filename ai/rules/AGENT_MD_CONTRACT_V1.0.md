@@ -2,29 +2,32 @@
 
 ## 1. Purpose
 
-This is the mandatory common contract for every Agent MD.
+This is the mandatory common execution contract for every Agent MD.
 
-It defines how an Agent must receive input, assemble context, classify tasks, detect reusable capabilities, select tools/models, execute, involve humans, produce output, hand off, record cost, and pass Audit.
+Agent MD defines **what an Agent does**. This Contract defines **how it must execute**.
 
-Agent-specific MDs define **what the Agent does**. This Contract defines **how every Agent must do it**.
+Agents are divided into:
 
-No Agent may invent a separate execution pattern that conflicts with this Contract.
+- `Process Agent` — owns lifecycle Phase execution and Phase Output.
+- `Capability Agent` — provides reusable specialist capability.
+
+A Phase is owned by its Process Agent and MUST use the same Input / Execution / Output / Gate principles. A Phase must not create a second implementation of an Agent capability.
 
 ## 2. Mandatory Agent MD Structure
 
-Every Agent MD must contain, at minimum:
+Every Agent MD MUST define:
 
 1. Agent Type
 2. Responsibility
 3. Non-Responsibility
-4. Trigger
+4. Trigger / Invocation
 5. Owner Phase when Process Agent
 6. Input
 7. Input Validation
 8. Context Assembly
 9. Task Classification
 10. Capability Detection
-11. Execution Strategy / Tool / MCP Selection
+11. Execution Strategy / Tool / MCP / Skill Selection
 12. Model Selection
 13. Execution
 14. Human-in-the-Loop
@@ -39,57 +42,34 @@ Every Agent MD must contain, at minimum:
 23. Audit
 24. Knowledge Handoff
 
-A section may state `N/A` only when genuinely not applicable, with a reason. It must not be silently omitted.
+## 3. Input Contract
 
-## 3. Agent Definition Contract
+Inputs consist of:
 
-Each Agent must explicitly define:
+### System Context
 
-- Agent Name
-- Agent Type: `Process` or `Capability`
-- Responsibility
-- Non-Responsibility
-- Trigger
-- Owner Phase when Process Agent
-- Invocation rules when Capability Agent
-- Dependencies
-- Output Consumers
-
-`Non-Responsibility` is mandatory to prevent Agent scope creep and unauthorized decisions.
-
-## 4. Input Contract
-
-Inputs are separated into:
-
-### 4.1 System Context
-
-- Project ID
-- Project Context
+- Project ID / Context
 - Current Phase
-- Current Version
+- Version
 - Agent Version
-- Knowledge Base
 - Rules
-- Previous valid outputs
+- Knowledge Base
+- Previous valid Outputs
 
-Existing System Context must not be requested from the user again.
-
-### 4.2 Task Input
+### Task Input
 
 - Task ID
 - Task Type
-- Task Goal
-- Task Description
+- Goal
+- Description
 - Priority
 - Trigger Source
 - Related Task
 - Deadline when applicable
 
-### 4.3 User Input
+### User Input
 
-User input is requested only when System Context and Task Input cannot safely satisfy the task.
-
-Distinguish:
+Classify as:
 
 - Required Input
 - Optional Input
@@ -97,52 +77,35 @@ Distinguish:
 - Confirmation Input
 - Approval Input
 
-The Agent must name the missing information and explain why it is required.
+Existing valid context must not be requested again. Critical business facts must not be guessed.
 
-### 4.4 Previous Output
+### Previous Output
 
-Reusable outputs must record:
+Reusable output must retain source Task, Agent, version, time, validity, and provenance.
 
-- Source Task
-- Source Agent
-- Output Version
-- Generated Time
-- Validity
-
-## 5. Input Validation Contract
+## 4. Input Validation / Context
 
 Before execution, check:
 
-1. Completeness
-2. Validity
-3. Cross-source consistency
-4. Timeliness
-5. Source reliability
-6. Executability
+- completeness;
+- validity;
+- consistency;
+- freshness;
+- provenance;
+- executability.
 
-If information is missing:
+Build context from System Context + Project Context + Phase Input + Task Input + relevant validated Outputs + Knowledge + User Decisions.
 
-- safely inferable → continue;
-- requires user choice → `USER_DECISION_REQUIRED`;
-- critical required input missing → `WAITING_FOR_INPUT`.
+Priority:
 
-Critical business facts must never be guessed.
+`System Rule > Project Rule > Current Task > User Decision > Validated Output > Historical Knowledge > Inference`
 
-## 6. Context Assembly Contract
+Missing critical input → `WAITING_FOR_INPUT`.
+User choice required → `USER_DECISION_REQUIRED`.
 
-Build a Task Context before model execution:
+## 5. Task Classification
 
-`System Context + Project Context + Phase Context + Task Input + Relevant Previous Outputs + Relevant Knowledge + User Decision`
-
-Context must be deduplicated and trimmed to task relevance.
-
-Priority order:
-
-`System Rule > Project Rule > Current Task > User Decision > Validated Previous Output > Historical Knowledge > Inference`
-
-## 7. Task Classification Contract
-
-Every Task must be classified as one or more of:
+Every Task is classified as one or more of:
 
 - Information Retrieval
 - Information Organization
@@ -152,367 +115,277 @@ Every Task must be classified as one or more of:
 - Action / Execution
 - Verification / Audit
 
-Task classification informs execution strategy, model choice, and Quality Gate.
+## 6. Capability Detection
 
-## 8. Capability Detection Contract
+Before execution, determine whether reusable capabilities can materially improve the Task.
 
-Before execution, the Agent must determine whether specialist Capability Agents can improve the result.
+For interactive human requirements:
 
-For human-facing flows:
+1. Offer valid existing results for reuse first.
+2. If a new capability would materially help, tell the user which capability is available.
+3. Allow the user to select one, multiple, reuse existing results, or skip.
+4. Do not silently invoke optional specialist capabilities unless a Project Rule requires it.
 
-1. If a valid reusable capability result exists, offer association / reuse.
-2. If no valid result exists but a capability would materially help, explicitly tell the user which capability is available.
-3. The user may select one capability, multiple capabilities, existing results, or skip.
-4. Capability invocation is not mandatory unless a higher-level Project Rule explicitly makes it required.
-5. Existing valid results must be preferred over duplicate execution.
+## 7. Common Capability Pool
 
-Current specialist capabilities include Competitor Analysis and Data Analysis.
+The common execution capability types are:
 
-## 9. Execution Strategy Contract
+1. `TOOL`
+2. `USER_MCP`
+3. `USER_SKILL`
+4. `CAPABILITY_AGENT`
+5. `MODEL`
 
-Before selecting a model, determine whether the Task can be completed reliably by a deterministic Tool, a registered Capability Agent, or a Model.
+These are not additional lifecycle Agents.
 
-Default strategy:
+### Tool
 
-`Deterministic Tool → Capability Agent → Model`
+Use deterministic built-in / project tools for deterministic work.
 
-This is a decision priority, not an absolute prohibition on combining them. A Task may use multiple strategies when that is required for a correct result.
+### User-configured MCP
 
-### 9.1 Deterministic Tool
+User-configured MCPs belong to the Common Capability Pool. Any authorized Agent may consider a compatible MCP.
 
-Use tools first for deterministic work, including:
+MCP selection MUST verify authorization, capability-task compatibility, schema, availability, and applicable cost / latency / audit requirements. Agents must not call every available MCP by default.
 
-- SQL / database query;
-- Python / calculation;
-- analytics / metric query;
-- repository / file retrieval or modification;
-- other registered deterministic tools.
+### User Skill
 
-LLMs must not perform deterministic work merely because they can.
+A User Skill is a user-provided reusable skill / instruction package that declares domain knowledge, procedure, constraints, or execution guidance.
 
-### 9.2 Capability Agent
+A User Skill:
 
-Use a Capability Agent when the task requires its specialist capability and the capability is registered, authorized, and appropriate.
+- must be applicable to the current Task;
+- should be registered / discoverable;
+- must respect System Rules, Project Rules, permissions, security boundaries, and this Contract;
+- may complement a Tool, MCP, Capability Agent, or Model;
+- does not automatically replace them;
+- should retain source / version information when available.
 
-### 9.3 Model
+### Capability Agent
 
-Use a Model for interpretation, reasoning, generation, judgment, or other work that genuinely requires model capability.
+Use a registered specialist Agent such as Competitor Analysis or Data Analysis when specialist capability is required.
 
-## 10. Common Capability Pool and User-Configured MCP
+### Model
 
-User-configured MCPs are part of the project's **Common Capability Pool**.
+Use a Model when reasoning, interpretation, generation, judgment, or another model-dependent capability is genuinely required.
 
-They are not private capabilities owned by a single Agent. Any authorized Agent may consider a registered MCP when its capability matches the Task.
+## 8. Execution Strategy
 
-A registered MCP should define, where applicable:
+The default decision priority is:
 
-- MCP name;
-- capability description;
-- input schema;
-- output schema;
-- authorization / permission scope;
-- availability status;
-- owner / configuration source;
-- cost information when available;
-- timeout / failure behavior;
-- auditability.
+```text
+Task
+ ↓
+Task Classification
+ ↓
+Capability Detection
+ ↓
+Capability Registry
+ ↓
+Tool / MCP / User Skill / Capability Agent / Model Selection
+ ↓
+Execution
+```
 
-### MCP Selection Rules
+This is a priority, not a prohibition on composition. One Task may combine multiple capability types.
 
-Agents MUST:
+Deterministic work should use deterministic Tools / MCPs whenever possible.
 
-1. verify MCP authorization and availability;
-2. verify capability-task compatibility;
-3. use only declared inputs / schemas;
-4. avoid calling unrelated MCPs;
-5. record the Tool / MCP Run;
-6. preserve material MCP results as evidence;
-7. record cost / latency when available;
-8. apply defined fallback / failure handling;
-9. request human approval for operations requiring approval.
+The Phase invokes its owning Process Agent; it does not maintain a separate Phase-specific Agent implementation.
 
-Agents MUST NOT call every available MCP by default.
+## 9. Model Selection
 
-MCPs are part of Tool Selection and are evaluated before unnecessary model execution.
+Every Model Run must record, where available:
 
-## 11. Model Selection Contract
-
-Every model execution must be attributable to a selection decision.
-
-Record:
-
-- Model
-- Model Version
+- Model / Version
 - Selection Reason
 - Input Tokens
 - Output Tokens
 - Cached Tokens
 - Total Tokens
-- Estimated Cost
-- Actual Cost when available
+- Estimated / Actual Cost
 - Latency
 - Retry Count
 - Escalation
 - Quality Result
 
-The exact Dynamic Model Routing algorithm is defined separately and must not be duplicated inside individual Agent MDs.
+The optimization target is **Quality-Constrained Minimum Cost**, not Token count alone.
 
-## 12. Execution Contract
+The Dynamic Model Routing algorithm is a separate common-runtime concern and must not be duplicated inside individual Agents.
 
-Every Task must be decomposable into auditable Steps.
+## 10. Execution Contract
 
-Minimum execution chain:
+Every Task must be decomposable into traceable Steps:
 
-`Task → Input Validation → Context Assembly → Task Classification → Capability Detection → Tool / MCP / Capability / Model Selection → Execution → Quality Check → Output → Handoff`
+`Task → Input Validation → Context Assembly → Classification → Capability Detection → Tool / MCP / Skill / Capability / Model Selection → Execution → Quality Check → Output → Handoff`
 
-The Agent must preserve execution evidence.
+Material Tool / MCP / Skill / Capability / Model executions must be traceable to Task and Step IDs.
 
-## 13. Human-in-the-Loop Contract
+## 11. Human-in-the-Loop
 
-User intervention uses standardized states:
+Standard states:
 
 - `WAITING_FOR_INPUT`
 - `USER_DECISION_REQUIRED`
 - `USER_CONFIRMATION_REQUIRED`
 - `USER_APPROVAL_REQUIRED`
 
-User prompts must state what decision or information is needed and the available options when options are known.
+Prompts must state what is missing / what must be decided and provide options where known.
 
-For human Product requirements, if Competitor Analysis and/or Data Analysis can materially improve the result, the user must be informed of the available options rather than the Agent silently invoking optional capabilities.
+## 12. Output Contract
 
-## 14. Output Contract
+Every Agent MUST provide:
 
-Every Agent produces two layers.
-
-### 14.1 Structured Output
-
-Minimum fields:
+### Structured Output
 
 - task_id
 - status
 - input_summary
 - execution
-- findings
+- findings / result
 - evidence
-- decision
-- recommendations
+- decisions when applicable
+- recommendations when applicable
 - quality
-- confidence
 - handoff
 
-### 14.2 Human-Readable Output
+### Human-Readable Output
 
 Default order:
 
 `Conclusion → Key Findings → Evidence → Analysis → Recommendation → Next Step`
 
-Internal traces or raw JSON must not be presented as the primary user-facing result.
+For a Process Agent, the formal **Phase Output is mandatory** and is the primary downstream boundary.
 
-## 15. Evidence Contract
+## 13. Phase Output / Handoff
 
-Important conclusions must identify their evidence source.
+A Process Agent owning a Phase MUST produce a versioned Phase Output.
 
-Evidence types include:
+The approved Phase Output becomes the formal primary input of the next Phase.
 
-- User Input
-- Project Context
-- Tool Result
-- MCP Result
-- Data
-- Competitor Source
-- Previous Agent Output
-- Knowledge Base
-- Model Inference
+```text
+Product Output → Design Input
+Design Output → Planning Input
+Planning Output → Coding Input
+Coding Output → Testing Input
+Testing Output → Release Input
+Release Output → Maintenance Input
+```
 
-Distinguish explicitly:
+A Phase Handoff must preserve artifact version, provenance, decisions, constraints, unresolved items, required next inputs, and readiness.
+
+After Quality + independent Audit + next-Phase Readiness pass, the system SHOULD proactively prompt the user to start the next Phase. The next business Phase starts only after user confirmation unless an explicit Project Rule authorizes automatic progression.
+
+## 14. Evidence Contract
+
+Material conclusions must identify evidence. Distinguish:
 
 - Fact
 - Finding
 - Hypothesis
 - Recommendation
+- Decision
 
-Hypothesis must not be presented as fact.
+Evidence may originate from User Input, Project Context, Tool, MCP, User Skill, Data, Competitor Source, Agent Output, Knowledge Base, or Model Inference.
 
-## 16. Quality Gate Contract
+## 15. Quality Gate
 
-Every Agent defines Quality Gates for:
+Every Agent / Phase must define:
 
 - Input Quality
 - Execution Quality
 - Output Quality
 - Evidence Quality
 - Handoff Quality
+- Independent Audit where required
 
-Standard results:
+Standard outcomes:
 
-- `PASS`
-- `PARTIAL`
-- `BLOCKED`
-- `FAIL`
+`PASS / PARTIAL / BLOCKED / FAIL`
 
-## 17. Handoff Contract
+A Phase is not complete without required Phase Output and required gates.
 
-Every completed Task must identify:
+## 16. State
 
-- Output
-- Consumer Agent / Phase
-- Intended use
-- Whether downstream can consume directly
-- Whether human confirmation is required
-
-For a Process Agent, its approved Phase Output is also the formal input boundary for the next Phase under the Phase Contract.
-
-## 18. State Contract
-
-Standard lifecycle:
+Standard Task lifecycle:
 
 `CREATED → INPUT_CHECK → [WAITING_FOR_INPUT / USER_DECISION_REQUIRED] → EXECUTING → QUALITY_REVIEW → COMPLETED`
 
-Exceptional states:
+Exceptions:
 
 `PARTIAL / BLOCKED / FAILED / SKIPPED`
 
-## 19. Parallel Task Contract
+Phase lifecycle is governed by `PHASE_CONTRACT_V1.0.md`.
 
-One Phase may contain multiple independent Tasks and Conversations.
+## 17. Parallel Task
 
-Each independent Task must have:
+One Phase may contain multiple independent Tasks / Conversations.
 
-- independent Task ID;
-- independent Conversation;
-- independent execution state;
-- independent Token / Cost record;
-- independent Model Run record.
+Each independent Task keeps its own:
 
-Tasks communicate through Project Context, Knowledge Base, and structured outputs.
+- Task ID
+- Conversation
+- State
+- Execution Record
+- Token / Cost
+- Model / Tool / MCP / Skill Runs
 
-A Phase must not be treated as one mandatory Conversation.
+Tasks communicate through structured Outputs / Artifacts, Project Context, and Knowledge Base.
 
-## 20. Reuse Contract
+## 18. Reuse
 
-Before starting a new expensive execution, check whether a valid result already exists.
+Before expensive execution, check whether a valid Artifact can be reused.
 
-Reuse when the result is:
+Reuse only when relevant, sufficiently current, complete enough, quality-approved, and compatible with the current Task.
 
-- available;
-- still valid;
-- sufficiently scoped;
-- quality-acceptable.
+## 19. Token & Cost
 
-Re-execution is justified only when the result is missing, stale, insufficient, or quality-deficient.
+Usage is traceable:
 
-## 21. Token & Cost Contract
+`Project → Phase → Task → Step → Tool / MCP / Skill / Model Run`
 
-Cost must be traceable at:
+Record applicable Tool Cost, MCP Cost, Skill usage, Model Cost, Retry Cost, Escalation Cost, latency, and quality.
 
-`Project → Phase → Task → Step → Tool / MCP Run → Model Run`
+Detailed record definitions are in `EXECUTION_RECORD_CONTRACT_V1.0.md`.
 
-Task cost should account for applicable:
+## 20. Audit
 
-`Tool Cost + MCP Cost + Model Cost + Retry Cost + Escalation Cost`
+Independent Audit must check:
 
-This evidence is required for future model-routing optimization and Audit.
+- Agent category / scope;
+- input / context / validation;
+- capability detection;
+- Tool / MCP / User Skill / Capability Agent / Model selection;
+- execution traceability;
+- human intervention;
+- structured / human output;
+- evidence;
+- Phase Output where applicable;
+- quality gates;
+- handoff;
+- state;
+- parallel-task isolation;
+- reuse;
+- Token / Cost;
+- PRD / decision / evidence linkage where applicable.
 
-## 22. Audit Contract
+An Agent must not self-certify its independent Audit.
 
-Every Agent MD must be auditable against this Contract.
+Only `AUDIT_PASS` is formally acceptable.
 
-Audit checks:
+## 21. Knowledge Handoff
 
-### Architecture
+Classify results as:
 
-- Correct Agent category
-- Clear responsibility boundary
-- No unauthorized scope
+- one-time output → Artifact / archive;
+- reusable rule → Knowledge Base;
+- execution rule → Agent / Rules;
+- process learning → Retrospective.
 
-### Input / Context
+## 22. Contract References
 
-- Required inputs defined
-- Existing context reused
-- Input validation present
-- Context assembled without unjustified contamination
+- `ai/rules/PHASE_CONTRACT_V1.0.md`
+- `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md`
+- `ai/rules/CAPABILITY_REGISTRY_V1.0.md`
 
-### Capability / Execution Strategy
-
-- Capability detection is present
-- Existing valid results are reused
-- Tool / Capability / Model choice is justified
-- User-configured MCP handling follows the Common Capability Pool rules
-
-### Execution
-
-- Common execution chain followed
-- Tool / MCP / Capability / Model Runs are traceable
-- Human intervention is explicit where required
-
-### Output
-
-- Structured output complete
-- Human-readable output usable
-- Evidence traceable
-- Handoff explicit
-
-### Cost
-
-- Tool / MCP / Model Runs recorded where applicable
-- Token recorded for model runs
-- Cost recorded where available / required
-- Retry / escalation recorded
-
-### State / Parallelism / Reuse
-
-- State transitions comply with the standard contract
-- Independent Tasks remain isolated
-- Existing valid results are considered before duplicate execution
-
-### Independence
-
-- Agent does not self-certify independent Audit
-- Audit remains independent from the Agent being audited
-
-Final Audit result:
-
-`AUDIT_PASS / AUDIT_PARTIAL / AUDIT_FAIL / AUDIT_BLOCKED`
-
-Only `AUDIT_PASS` is eligible for formal acceptance.
-
-## 23. Knowledge Contract
-
-After completion, classify knowledge:
-
-- One-time result → archive only
-- Reusable long-term rule → Knowledge Base
-- Execution / process rule → AGENT / Rules
-- Learning from failure or change → Retrospective
-
-Do not place every execution result into permanent knowledge.
-
-## 24. Phase Contract Integration
-
-Process Agents MUST comply with `ai/rules/PHASE_CONTRACT_V1.0.md` when they own a project Phase.
-
-The Phase and Process Agent share the same Input, Execution, Output, Quality Gate, Audit Gate, and Handoff principles.
-
-A Process Agent MUST produce a formal Phase Output. The approved Phase Output becomes the primary structured input to the next Phase.
-
-Phase completion MUST NOT be declared when required Phase Output or gates are missing.
-
-## 25. Compliance Rule
-
-When an existing Agent MD conflicts with this Contract, this Contract wins unless an explicitly versioned higher-level rule supersedes it.
-
-Any exception must be documented and audited.
-
-## 26. Versioning Rule
-
-Changes to this Contract require synchronized review of:
-
-1. Agent Architecture
-2. Agent MDs
-3. Rules
-4. Knowledge Base
-5. Retrospective
-6. Audit criteria
-7. Phase Contract when phase lifecycle is affected
-
-A Contract update is not complete until dependent Agent MDs and Phase definitions have been checked for compliance.
+Changes to this Contract require compatibility review of affected Agent MDs, Phase definitions, Architecture, Audit criteria, Knowledge Base, and Retrospective.
