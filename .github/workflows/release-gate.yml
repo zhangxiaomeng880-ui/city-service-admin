@@ -1,0 +1,22 @@
+name: AI Native 2.0 Release Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - fix/ai-native-2.0-validation
+      - fix/ai-native-2.0-backend-validation
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce backend validation gate
+        run: |
+          if [ ! -f backend/REPO_BOOTSTRAP_BLOCKER.md ]; then
+            echo 'Backend repository gate evidence is missing.'
+            exit 1
+          fi
+          echo 'Backend validation is not complete; release remains BLOCKED.'
+          exit 1
