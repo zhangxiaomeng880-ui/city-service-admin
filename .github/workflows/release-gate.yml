@@ -43,4 +43,4 @@ jobs:
           exit 1
       - name: Release gate status
         run: echo 'Backend validation and runtime evidence PASS; release gate may proceed to downstream testing/audit gates.'
-# validation-trigger: 2026-08-21
+# validation-trigger: 2026-08-21-1412
