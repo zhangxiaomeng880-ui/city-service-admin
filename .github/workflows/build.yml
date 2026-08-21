@@ -3,10 +3,11 @@ name: Build
 on:
   push:
     branches:
-      - agent/implement-figma-city-service
+      - main
+      - fix/ai-native-2.0-backend-validation
   pull_request:
     branches:
-      - agent/implement-figma-city-service
+      - main
 
 jobs:
   build:
