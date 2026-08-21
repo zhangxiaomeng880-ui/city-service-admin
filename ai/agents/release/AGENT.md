@@ -93,6 +93,6 @@ Release incidents and reusable deployment rules become Knowledge / Rules; proces
 
 ## 24. Contract References
 - `ai/rules/AGENT_MD_CONTRACT_V1.0.md`
-- `ai/rules/PHASE_CONTRACT_V1.0.md`
+- `ai/rules/PHASE_CONTRACT_V1.1.md`
 - `ai/rules/EXECUTION_RECORD_CONTRACT_V1.0.md`
 - `ai/rules/CAPABILITY_REGISTRY_V1.0.md`
