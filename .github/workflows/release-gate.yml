@@ -1,0 +1,41 @@
+name: AI Native 2.0 Release Gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: zhangxiaomeng880-ui/department-registration-backend
+          ref: fix/ai-native-2.0-backend-validation
+          path: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify backend repository and validation
+        working-directory: backend
+        run: |
+          test -f package.json
+          test -f src/server.mjs
+          test -f test/backend.test.mjs
+          npm install
+          npm run validate
+      - name: Verify backend runtime
+        working-directory: backend
+        run: |
+          node src/server.mjs > /tmp/backend-release-gate.log 2>&1 &
+          PID=$!
+          trap 'kill $PID' EXIT
+          for i in {1..10}; do
+            if curl --fail http://127.0.0.1:3000/health; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/backend-release-gate.log
+          exit 1
+      - name: Release gate status
+        run: echo 'Backend validation and runtime evidence PASS; release gate may proceed to downstream testing/audit gates.'
