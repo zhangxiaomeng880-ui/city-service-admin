@@ -1,0 +1,20 @@
+name: Backend Validation
+
+on:
+  push:
+    branches:
+      - fix/ai-native-2.0-backend-validation
+  pull_request:
+    branches:
+      - fix/ai-native-2.0-validation
+
+jobs:
+  backend-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate backend migration boundary
+        run: node backend/validation/backend-validation.mjs

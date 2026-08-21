@@ -1,20 +1,33 @@
-name: Build
+name: Build and Integration
 
 on:
   push:
     branches:
-      - agent/implement-figma-city-service
+      - main
+      - fix/ai-native-2.0-backend-validation
   pull_request:
     branches:
-      - agent/implement-figma-city-service
+      - main
 
 jobs:
-  build:
+  build-and-integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: zhangxiaomeng880-ui/department-registration-backend
+          ref: fix/ai-native-2.0-backend-validation
+          path: backend
       - uses: actions/setup-node@v4
         with:
           node-version: 20
       - run: npm install
       - run: npm run build
+      - name: Start backend
+        run: node backend/src/server.mjs > /tmp/backend.log 2>&1 &
+      - name: Wait for backend
+        run: for i in {1..10}; do curl --fail http://127.0.0.1:3000/health && exit 0; sleep 1; done; cat /tmp/backend.log; exit 1
+      - name: Frontend backend integration
+        run: npm run integration:backend
