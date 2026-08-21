@@ -1,0 +1,51 @@
+schema: RoutingTrace
+version: 1.0
+required: [trace_id, project_id, routing_id, final_outcome]
+fields:
+  trace_id: string
+  project_id: string
+  project_version: string
+  phase_id: string
+  phase_version: string
+  agent_id: string
+  agent_version: string
+  task_id: string
+  task_version: string
+  conversation_id: string
+  step_id: string
+  capability_requirement_id: string
+  model_pool_version: string
+  default_model_policy_version: string
+  routing_policy_version: string
+  routing_decision_id: string
+  model_run_ids: [string]
+  quality_result_id: string
+  retry_ids: [string]
+  evidence_refs: [string]
+  token_usage:
+    input: number
+    output: number
+    cached_input: number
+    reasoning: number
+    total: number
+  cost:
+    model: number
+    tool: number
+    mcp: number
+    total: number
+  latency_ms: number
+  capacity:
+    current_concurrency: number
+    max_concurrency: number
+    queue_depth: number
+    rpm: number
+    tpm: number
+  budget:
+    window: string
+    max_tokens: number
+    used_tokens: number
+    max_cost: number
+    used_cost: number
+  human_intervention: boolean
+  final_outcome: [SUCCESS, PARTIAL, ROUTING_FAILED, USER_DECISION_REQUIRED, BLOCKED, FAILED]
+  archived_at: datetime
