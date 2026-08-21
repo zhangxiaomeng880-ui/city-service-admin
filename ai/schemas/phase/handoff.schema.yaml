@@ -1,0 +1,17 @@
+schema: PhaseHandoff
+version: 1.0
+required: [handoff_id, project_id, from_phase_id, status, created_at]
+fields:
+  handoff_id: string
+  project_id: string
+  from_phase_id: string
+  to_phase_id: string
+  status: string
+  approved_phase_output_ids: [string]
+  gate_result_ids: [string]
+  audit_result_id: string
+  readiness_requirements: [object]
+  user_confirmation_required: boolean
+  user_confirmation_status: string
+  next_phase_started_at: datetime
+  created_at: datetime
