@@ -1,0 +1,24 @@
+schema: RoutingPolicy
+version: 1.0
+required: [policy_id, policy_version, strategy, status]
+fields:
+  policy_id: string
+  policy_version: string
+  strategy: [quality_first, cost_first, balanced]
+  effective_from: datetime
+  status: [DRAFT, VALIDATING, ACTIVE, DISABLED, DEPRECATED]
+  minimum_quality_threshold: number
+  minimum_reliability_threshold: number
+  score_tie_threshold: number
+  max_retry_count: number
+  allow_cross_provider: boolean
+  allow_fallback: boolean
+  token_efficiency_policy: object
+  capacity_policy: object
+  concurrency_policy: object
+  budget_policy: object
+  latency_policy: object
+  compliance_policy: object
+  audit_status: [PENDING, PASS, BLOCKED, FAIL]
+  created_at: datetime
+  updated_at: datetime
