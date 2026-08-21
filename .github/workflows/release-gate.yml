@@ -1,6 +1,7 @@
 name: AI Native 2.0 Release Gate
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
