@@ -184,6 +184,37 @@ Foundation Domains、Resource、Capability、Action、Execution、Runtime Capabi
 
 API/OpenAPI/Schema、SDK、Resource/Capability Registry、Runtime Adapter、Model Provider Adapter、Tool/MCP/Skill Registry、Routing Engine、Planning Engine、自动化验证以及可视化 Control Center 属于实现阶段，不反向改变已 PASS 的基础抽象。
 
-## 13. 文档索引
+## 13. V2.0 执行层基线（已补齐）
 
-本版本不复制 V1.x 规则；已有规则通过 `V2.0_DOCUMENT_INDEX.md` 建立关联。V1.x 保留为演进历史，V2.0 为当前标准能力层的唯一事实来源。
+V2.0 Foundation 现在通过以下 Contract 收束为可执行 Runtime：
+
+- `ai/rules/V2_EXECUTION_RUNTIME_CONTRACT_V1.0.md`
+- `ai/rules/AUDIT_INDEPENDENCE_CONTRACT_V1.0.md`
+- `ai/rules/EXECUTION_EVIDENCE_CONTRACT_V1.0.md`
+- `ai/rules/RESUME_RECOVERY_CONTRACT_V1.0.md`
+
+统一链路：
+
+```text
+Trigger
+→ Context Readiness
+→ Routing
+→ Process Agent
+→ Capability Selection
+→ Execution
+→ Output Verification
+→ Quality Gate
+→ Independent Audit
+→ Phase Output
+→ Handoff
+→ Next-Phase Readiness
+→ Human Gate / Authorized Auto Progression
+```
+
+阶段完成现在必须同时满足：Required Input Ready、Process Agent Complete、Phase Output Versioned、Quality PASS、Independent Audit PASS、Evidence Trace Complete、Handoff Created、State Persisted、No Blocking Issue。
+
+异常状态统一进入 WAITING_FOR_INPUT / USER_DECISION_REQUIRED / BLOCKED / FAILED / PAUSED 等状态，并必须保存 Resume Point；恢复时不得重新执行已验证的上游结果。
+
+## 14. 文档索引
+
+本版本不复制 V1.x 规则；已有规则与 V2.0 执行层通过 `V2.0_DOCUMENT_INDEX.md` 建立关联。V1.x 保留为演进历史，V2.0 为当前标准能力层的唯一事实来源。
